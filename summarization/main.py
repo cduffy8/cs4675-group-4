@@ -1,9 +1,11 @@
 import openai
 from pymongo import MongoClient
 from summarization import summarize_text, summarize_chunk
+import os
+from dotenv import load_dotenv
 
-# TODO: hide api key
-openai.api_key = "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"
+load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # change threshold if needed
 def process_document(document):
