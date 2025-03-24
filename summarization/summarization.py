@@ -1,8 +1,9 @@
-# import os
+import os
 import openai
+from dotenv import load_dotenv
 
-# TODO: change to openai.api_key = os.getenv("OPENAI_API_KEY")
-openai.api_key = "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"
+load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # change model if needed
 def summarize_text(text, model = "gpt-3.5-turbo", max_tokens = 200):

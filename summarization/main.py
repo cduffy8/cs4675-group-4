@@ -1,10 +1,11 @@
-# import os
+import os
 import openai
 from pymongo import MongoClient
 from summarization import summarize_text, summarize_chunk
+from dotenv import load_dotenv
 
-# TODO: change to openai.api_key = os.getenv("OPENAI_API_KEY")
-openai.api_key = "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"
+load_dotenv()
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # change threshold if needed
 def process_document(document):
