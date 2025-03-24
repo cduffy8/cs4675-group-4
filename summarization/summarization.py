@@ -1,7 +1,7 @@
 import openai
 
 # TODO: hide api key
-openai.api_key = "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"
+openai.api_key = "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"
 
 # change model if needed
 def summarize_text(text, model = "gpt-3.5-turbo", max_tokens = 200):
