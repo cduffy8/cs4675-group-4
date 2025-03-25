@@ -81,17 +81,17 @@ body {
   }
   
   .search-button {
-    background-color: #007bff;
+    background-color: #aaaaaa;
     border: none;
     color: white;
     padding: 10px 15px;
     font-size: 16px;
     cursor: pointer;
-    border-radius: 0 5px 5px 0;
+    border-radius: 5px 5px 5px 5px;
   }
   
   .search-button:hover {
-    background-color: #0056b3;
+    background-color: #bbbbbb;
   }
   
   /* Results */
@@ -115,9 +115,67 @@ body {
     text-decoration: underline;
   }
   
-  /* Loading Text */
+  /* Loading state */
   .loading-text {
-    margin-top: 10px;
-    color: #aaa;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    color: #4da6ff;
   }
-  
+
+  /* Results Section */
+  .results {
+    max-height: 500px;
+    overflow-y: auto; /* Enable vertical scrolling */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+  }
+
+  .results-list {
+    margin: 0;
+    padding: 0;
+  }
+
+  .result-item {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .result-item:last-child {
+    border-bottom: none;
+  }
+
+  .result-item h3 {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  .result-item a {
+    color: #4da6ff;
+    text-decoration: none;
+  }
+
+  .result-item a:hover {
+    text-decoration: underline;
+  }
+
+  .result-item p {
+    margin: 5px 0;
+  }
+
+  /* Dropdown styling */
+  .model-select {
+    padding: 10px;
+    margin: 0px 10px 0px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .model-select option {
+    font-size: 16px;
+  }

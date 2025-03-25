@@ -3,3 +3,4 @@ __pycache__/
 .DS_Store
 cs4675_env/
 .env
+app/qdrant_storage
