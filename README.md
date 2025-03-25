@@ -1,6 +1,7 @@
 1. Make sure you have docker installed
-2. Run `docker pull qdrant/qdrant`
-3. Run `docker run -p 6333:6333 -p 6334:6334 -v "$(pwd)/qdrant_storage:/qdrant/storage:z" qdrant/qdrant`
-4. Navigate to 'app' directory
-5. Run `uvicorn main:app --reload`
-6. Make sure to clean up any docker containers/images after running
+2. Make sure to update .env file to contain MONGO_DB connection string (ask Danny/Duffy if confused)
+3. Navigate to 'app' directory
+4. Run `docker pull qdrant/qdrant`
+5. Run `docker run -p 6333:6333 -p 6334:6334 -v "$(pwd)/qdrant_storage:/qdrant/storage:z" qdrant/qdrant`
+6. Run `uvicorn main:app --reload`
+7. Make sure to clean up any docker containers/images after running
