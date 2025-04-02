@@ -103,6 +103,12 @@ export default function App() {
                 </h3>
                 <p>{truncateText(result.text)}</p>
                 <p>Score: {result.score}</p>
+                <button
+                  onClick={() => navigator.clipboard.writeText(result.id)}
+                  className="copy-button"
+                >
+                  Copy ID
+                </button>
               </div>
             ))}
           </div>
