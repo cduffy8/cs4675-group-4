@@ -3,6 +3,7 @@ from scrapy.linkextractors import LinkExtractor
 from scrapy.crawler import CrawlerProcess
 from bs4 import BeautifulSoup
 from pymongo import MongoClient
+import uuid
 
 
 class MySpider(scrapy.Spider):
@@ -34,7 +35,8 @@ class MySpider(scrapy.Spider):
         data = {
             'url': response.url,
             'title': response.css('title::text').get(),
-            'html': cleaned_html
+            'html': cleaned_html,
+            'vector_id': str(uuid.uuid4()),
         }
 
         # Save to MongoDB

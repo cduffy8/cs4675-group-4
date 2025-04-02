@@ -9,7 +9,7 @@ from service.models.Asset import Asset
 from service.vector.VectorService import VectorService
 
 class SearchService:
-    def __init__(self, mongo_db_secret: str, search_configs: SearchConfigs):
+    def __init__(self, mongo_db_secret: str, search_configs: SearchConfigs, initialize: bool = True):
         self.crawl_data_collection : CrawlDataCollection = CrawlDataCollection(mongo_db_secret)
         
         self.vector_services : Dict[str, VectorService] = {}
@@ -20,7 +20,8 @@ class SearchService:
             
         self.qdrant_client : QdrantClient = QdrantClient(url="http://localhost:6333")
         
-        self.initialize_indexes()
+        if initialize:
+            self.initialize_indexes()
             
     def initialize_indexes(self):
         assets: List[Asset] = self.crawl_data_collection.get_all()
@@ -37,7 +38,7 @@ class SearchService:
         point_structs : List[PointStruct] = []
         
         for item in assets:
-            point_structs.append(PointStruct(id=item.id, vector=item.vectors[model_name], payload=item.get_qdrant_payload()))
+            point_structs.append(PointStruct(id=item.vector_id, vector=item.vectors[model_name], payload=item.get_qdrant_payload()))
             
         self.qdrant_client.upsert(collection_name=model_name, wait=True, points=point_structs)
         
