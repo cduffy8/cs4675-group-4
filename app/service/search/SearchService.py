@@ -40,6 +40,8 @@ class SearchService:
         point_structs : List[PointStruct] = []
         
         for item in assets:
+            if not item.vectors.get(model_name):
+                raise ValueError(f"Vector model {model_name} not found in asset {item.id}")
             point_structs.append(PointStruct(id=item.vector_id, vector=item.vectors[model_name], payload=item.get_qdrant_payload()))
             
         self.qdrant_client.upsert(collection_name=model_name, wait=True, points=point_structs)
