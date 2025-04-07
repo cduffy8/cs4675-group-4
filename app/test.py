@@ -72,7 +72,7 @@ search_configs = SearchConfigs(indexes=[
 ])
 
 print("Loading search service...")
-search_service : SearchService = SearchService(mongo_db_secret, search_configs, initialize=False)
+search_service : SearchService = SearchService(mongo_db_secret, search_configs, initialize=True)
 print("Search service loaded")
 
 def search(query: str, vector_model: str, top_k: int):

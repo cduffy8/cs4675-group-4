@@ -18,7 +18,9 @@ class SearchService:
             
         self.search_configs : SearchConfigs = search_configs
             
-        self.qdrant_client : QdrantClient = QdrantClient(url="http://localhost:6333")
+        ## keep this in case the collection gets too big somehow
+        # self.qdrant_client : QdrantClient = QdrantClient(url="http://localhost:6333") 
+        self.qdrant_client : QdrantClient = QdrantClient(location=":memory:")
         
         if initialize:
             self.initialize_indexes()
