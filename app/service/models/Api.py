@@ -3,7 +3,7 @@ from typing import List
 
 class SearchRequest(BaseModel):
     query: str
-    vector_model: str
+    index_name: str
     top_k: int
     
 class SearchResponseItem(BaseModel):
