@@ -17,7 +17,7 @@ export default function App() {
       const response = await axios.get("http://localhost:8000/search", {
         params: {
           query: query,
-          vector_model: vectorModel,
+          index_name: vectorModel,
           top_k: 5,
         },
         headers: {
@@ -82,6 +82,7 @@ export default function App() {
           <option value="all-MiniLM-L6-v2">all-MiniLM-L6-v2</option>
           <option value="paraphrase-MiniLM-L6-v2">paraphrase-MiniLM-L6-v2</option>
           <option value="all-distilroberta-v1">all-distilroberta-v1</option>
+          <option value="nomic-embed-text-v2">nomic-embed-text-v2</option>
         </select>
         <button onClick={search} className="search-button">
           Search
