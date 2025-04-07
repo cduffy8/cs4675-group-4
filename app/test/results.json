@@ -17,61 +17,61 @@
                         "id": "9bf69327-53ec-4df4-bc2a-55e54dd5d985",
                         "url": "https://nextjs.org/docs/app/getting-started/installation",
                         "title": "Getting Started: Installation | Next.js",
-                        "score": 0.2612794870007253
+                        "score": 0.2612795845341808
                     },
                     {
                         "id": "c82ea098-5af0-48bd-808e-07ff2aa66ef8",
                         "url": "https://nextjs.org/docs/app/getting-started/project-structure",
                         "title": "Getting Started: Project Structure | Next.js",
-                        "score": 0.25057946241624957
+                        "score": 0.2505793621511647
                     },
                     {
                         "id": "5ae51021-f738-4425-8341-a3b6508fdbbb",
                         "url": "https://nextjs.org/docs/app/getting-started",
                         "title": "App Router: Getting Started | Next.js",
-                        "score": 0.2440260063790828
+                        "score": 0.2440259724185024
                     },
                     {
                         "id": "4fc94d3d-3c03-4eb5-b4b6-d16ff6d5dc32",
                         "url": "https://nextjs.org/docs/app/building-your-application/configuring/src-directory",
                         "title": "Configuring: src Directory | Next.js",
-                        "score": 0.18182694123500937
+                        "score": 0.1818270182258124
                     },
                     {
                         "id": "dae7ed3e-0fff-4b52-bec9-04250e2718d6",
                         "url": "https://nextjs.org/docs/app/building-your-application/configuring",
                         "title": "Building Your Application: Configuring | Next.js",
-                        "score": 0.17826969890926891
+                        "score": 0.17826967775389735
                     },
                     {
                         "id": "5c25fce5-bf1b-449a-984e-89dd2dc427bd",
                         "url": "https://nextjs.org/docs/app/building-your-application",
                         "title": "App Router: Building Your Application | Next.js",
-                        "score": 0.17783029264880829
+                        "score": 0.1778302951662451
                     },
                     {
                         "id": "702cdecd-bbc8-4148-a5d3-0cb18676d8a3",
                         "url": "https://nextjs.org/docs/app/getting-started/images-and-fonts",
                         "title": "Getting Started: Images and Fonts | Next.js",
-                        "score": 0.1615956376370017
+                        "score": 0.16159560776680834
                     },
                     {
                         "id": "053fea13-0156-41f1-8897-3ad33b200c94",
                         "url": "https://nextjs.org/docs/app/api-reference/cli/next",
                         "title": "CLI: next CLI | Next.js",
-                        "score": 0.15605611049983178
+                        "score": 0.1560560821145856
                     },
                     {
                         "id": "1536fd27-77fd-4609-978d-525df4d93f78",
                         "url": "https://nextjs.org/docs/app/api-reference",
                         "title": "App Router: API Reference | Next.js",
-                        "score": 0.14719760060028073
+                        "score": 0.14719753800646138
                     },
                     {
                         "id": "cd5b4123-9418-4575-bd89-7673c0b1acc3",
                         "url": "https://nextjs.org/docs/app/building-your-application/upgrading",
                         "title": "Building Your Application: Upgrading | Next.js",
-                        "score": 0.13976742540008597
+                        "score": 0.13976737486144297
                     }
                 ],
                 "recall": 0.2,
@@ -219,6 +219,77 @@
                 "recall": 0.2,
                 "precision": 0.2,
                 "f1_score": 0.20000000000000004
+            },
+            {
+                "config": {
+                    "vector_model": "nomic-ai/nomic-embed-text-v2-moe",
+                    "vector_size": 768
+                },
+                "results": [
+                    {
+                        "id": "9bf69327-53ec-4df4-bc2a-55e54dd5d985",
+                        "url": "https://nextjs.org/docs/app/getting-started/installation",
+                        "title": "Getting Started: Installation | Next.js",
+                        "score": 0.36706994683901883
+                    },
+                    {
+                        "id": "bbfe7df2-d3dd-48af-8ab1-40857ceef51c",
+                        "url": "https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation",
+                        "title": "Optimizing: Instrumentation | Next.js",
+                        "score": 0.2967384420285859
+                    },
+                    {
+                        "id": "fcdc37c5-5328-44cf-b3fb-a05ed245df75",
+                        "url": "https://nextjs.org/docs/app/building-your-application/optimizing/third-party-libraries",
+                        "title": "Optimizing: Third Party Libraries | Next.js",
+                        "score": 0.29226882284909206
+                    },
+                    {
+                        "id": "5ae51021-f738-4425-8341-a3b6508fdbbb",
+                        "url": "https://nextjs.org/docs/app/getting-started",
+                        "title": "App Router: Getting Started | Next.js",
+                        "score": 0.285274983248728
+                    },
+                    {
+                        "id": "dae7ed3e-0fff-4b52-bec9-04250e2718d6",
+                        "url": "https://nextjs.org/docs/app/building-your-application/configuring",
+                        "title": "Building Your Application: Configuring | Next.js",
+                        "score": 0.27759025956474237
+                    },
+                    {
+                        "id": "c82ea098-5af0-48bd-808e-07ff2aa66ef8",
+                        "url": "https://nextjs.org/docs/app/getting-started/project-structure",
+                        "title": "Getting Started: Project Structure | Next.js",
+                        "score": 0.2754825386109122
+                    },
+                    {
+                        "id": "674f1d5c-3f6c-42af-9f76-f980f489a71e",
+                        "url": "https://nextjs.org/docs/app/api-reference/config",
+                        "title": "API Reference: Configuration | Next.js",
+                        "score": 0.2738081217395547
+                    },
+                    {
+                        "id": "4fc94d3d-3c03-4eb5-b4b6-d16ff6d5dc32",
+                        "url": "https://nextjs.org/docs/app/building-your-application/configuring/src-directory",
+                        "title": "Configuring: src Directory | Next.js",
+                        "score": 0.27317081614996225
+                    },
+                    {
+                        "id": "5c25fce5-bf1b-449a-984e-89dd2dc427bd",
+                        "url": "https://nextjs.org/docs/app/building-your-application",
+                        "title": "App Router: Building Your Application | Next.js",
+                        "score": 0.27116002242880255
+                    },
+                    {
+                        "id": "4e277caf-027b-490e-a846-83b85a15ed44",
+                        "url": "https://nextjs.org/docs/app/building-your-application/testing/cypress",
+                        "title": "Testing: Cypress | Next.js",
+                        "score": 0.2669725551846446
+                    }
+                ],
+                "recall": 0.2,
+                "precision": 0.2,
+                "f1_score": 0.20000000000000004
             }
         ]
     },
@@ -240,61 +311,61 @@
                         "id": "3f4f615d-fe78-480a-8fa3-a92b5747f8c4",
                         "url": "https://nextjs.org/docs/app/building-your-application/configuring/environment-variables",
                         "title": "Configuring: Environment Variables | Next.js",
-                        "score": 0.3695243662756099
+                        "score": 0.36952420759983007
                     },
                     {
                         "id": "f94c8225-7baf-4164-888e-76bf5bdaf37b",
                         "url": "https://nextjs.org/docs/app/api-reference/config/next-config-js/env",
                         "title": "next.config.js: env | Next.js",
-                        "score": 0.333112389747516
+                        "score": 0.3331123425186577
                     },
                     {
                         "id": "9bf69327-53ec-4df4-bc2a-55e54dd5d985",
                         "url": "https://nextjs.org/docs/app/getting-started/installation",
                         "title": "Getting Started: Installation | Next.js",
-                        "score": 0.19228733328195577
+                        "score": 0.19228731066092902
                     },
                     {
                         "id": "5ef22083-3cc7-4ff2-91a7-ab03a83e335c",
                         "url": "https://nextjs.org/docs/app/api-reference/cli/create-next-app",
                         "title": "CLI: create-next-app | Next.js",
-                        "score": 0.17471524261162863
+                        "score": 0.17471514499049148
                     },
                     {
                         "id": "000f490e-2f10-431c-954b-6d645b3950d2",
                         "url": "https://nextjs.org/docs/app/api-reference/config/next-config-js/generateBuildId",
                         "title": "next.config.js: generateBuildId | Next.js",
-                        "score": 0.1595059916441931
+                        "score": 0.15950603647295275
                     },
                     {
                         "id": "c82ea098-5af0-48bd-808e-07ff2aa66ef8",
                         "url": "https://nextjs.org/docs/app/getting-started/project-structure",
                         "title": "Getting Started: Project Structure | Next.js",
-                        "score": 0.15026661192892452
+                        "score": 0.15026651185110912
                     },
                     {
                         "id": "053fea13-0156-41f1-8897-3ad33b200c94",
                         "url": "https://nextjs.org/docs/app/api-reference/cli/next",
                         "title": "CLI: next CLI | Next.js",
-                        "score": 0.14844837080934373
+                        "score": 0.14844835931195938
                     },
                     {
                         "id": "e232bdf5-a620-4d18-b655-3eedb8785462",
                         "url": "https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config",
                         "title": "File Conventions: Route Segment Config | Next.js",
-                        "score": 0.14799689033847663
+                        "score": 0.1479969211796952
                     },
                     {
                         "id": "dae7ed3e-0fff-4b52-bec9-04250e2718d6",
                         "url": "https://nextjs.org/docs/app/building-your-application/configuring",
                         "title": "Building Your Application: Configuring | Next.js",
-                        "score": 0.13761039153220736
+                        "score": 0.13761039831786404
                     },
                     {
                         "id": "057a4229-9380-439d-8400-a7d80eaf6ef0",
                         "url": "https://nextjs.org/docs/app/building-your-application/deploying",
                         "title": "Building Your Application: Deploying | Next.js",
-                        "score": 0.12855486949601416
+                        "score": 0.12855487923600684
                     }
                 ],
                 "recall": 0.2,
@@ -442,6 +513,77 @@
                 "recall": 0.2,
                 "precision": 0.2,
                 "f1_score": 0.20000000000000004
+            },
+            {
+                "config": {
+                    "vector_model": "nomic-ai/nomic-embed-text-v2-moe",
+                    "vector_size": 768
+                },
+                "results": [
+                    {
+                        "id": "3f4f615d-fe78-480a-8fa3-a92b5747f8c4",
+                        "url": "https://nextjs.org/docs/app/building-your-application/configuring/environment-variables",
+                        "title": "Configuring: Environment Variables | Next.js",
+                        "score": 0.5333031007342199
+                    },
+                    {
+                        "id": "f94c8225-7baf-4164-888e-76bf5bdaf37b",
+                        "url": "https://nextjs.org/docs/app/api-reference/config/next-config-js/env",
+                        "title": "next.config.js: env | Next.js",
+                        "score": 0.42125058511320995
+                    },
+                    {
+                        "id": "c82ea098-5af0-48bd-808e-07ff2aa66ef8",
+                        "url": "https://nextjs.org/docs/app/getting-started/project-structure",
+                        "title": "Getting Started: Project Structure | Next.js",
+                        "score": 0.33734345426529605
+                    },
+                    {
+                        "id": "dae7ed3e-0fff-4b52-bec9-04250e2718d6",
+                        "url": "https://nextjs.org/docs/app/building-your-application/configuring",
+                        "title": "Building Your Application: Configuring | Next.js",
+                        "score": 0.3344505794269322
+                    },
+                    {
+                        "id": "9bf69327-53ec-4df4-bc2a-55e54dd5d985",
+                        "url": "https://nextjs.org/docs/app/getting-started/installation",
+                        "title": "Getting Started: Installation | Next.js",
+                        "score": 0.3000420579984123
+                    },
+                    {
+                        "id": "c1dcb086-4cca-4fe5-8759-429040072e6d",
+                        "url": "https://nextjs.org/docs/app/building-your-application/configuring/progressive-web-apps",
+                        "title": "Configuring: Progressive Web Applications (PWA) | Next.js",
+                        "score": 0.29041145208703056
+                    },
+                    {
+                        "id": "5ae51021-f738-4425-8341-a3b6508fdbbb",
+                        "url": "https://nextjs.org/docs/app/getting-started",
+                        "title": "App Router: Getting Started | Next.js",
+                        "score": 0.2885278961304045
+                    },
+                    {
+                        "id": "bbfe7df2-d3dd-48af-8ab1-40857ceef51c",
+                        "url": "https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation",
+                        "title": "Optimizing: Instrumentation | Next.js",
+                        "score": 0.2747697812595805
+                    },
+                    {
+                        "id": "702cdecd-bbc8-4148-a5d3-0cb18676d8a3",
+                        "url": "https://nextjs.org/docs/app/getting-started/images-and-fonts",
+                        "title": "Getting Started: Images and Fonts | Next.js",
+                        "score": 0.27048971873979244
+                    },
+                    {
+                        "id": "7a292b5d-5a3d-4e05-8598-6dd145fbe6cc",
+                        "url": "https://nextjs.org/docs/app/getting-started/updating-data",
+                        "title": "Getting Started: Updating Data | Next.js",
+                        "score": 0.2697970070402721
+                    }
+                ],
+                "recall": 0.2,
+                "precision": 0.2,
+                "f1_score": 0.20000000000000004
             }
         ]
     },
@@ -464,61 +606,61 @@
                         "id": "6a8a0498-0a72-41b3-a6e5-97b15ae92bdc",
                         "url": "https://nextjs.org/docs/app/api-reference/functions/next-request",
                         "title": "Functions: NextRequest | Next.js",
-                        "score": 0.573640867979797
+                        "score": 0.5736409079441582
                     },
                     {
                         "id": "22978d4b-c735-482b-8385-a7c3f47cc721",
                         "url": "https://nextjs.org/docs/app/api-reference/functions/cookies",
                         "title": "Functions: cookies | Next.js",
-                        "score": 0.5699223410095793
+                        "score": 0.5699223190037417
                     },
                     {
                         "id": "c15c7c21-0a16-4054-a638-14d16e04d4ed",
                         "url": "https://nextjs.org/docs/app/api-reference/functions/next-response",
                         "title": "Functions: NextResponse | Next.js",
-                        "score": 0.4910858493438829
+                        "score": 0.49108591926085643
                     },
                     {
                         "id": "5cf6559b-1033-4164-a916-a6a44738a1b1",
                         "url": "https://nextjs.org/docs/app",
                         "title": "Introduction: App Router | Next.js",
-                        "score": 0.4122314275747823
+                        "score": 0.41223145140369755
                     },
                     {
                         "id": "12110a3f-1785-43d8-9c9c-983a51550041",
                         "url": "https://nextjs.org/docs/app/building-your-application/routing/middleware",
                         "title": "Routing: Middleware | Next.js",
-                        "score": 0.3401314743834314
+                        "score": 0.34013152893988174
                     },
                     {
                         "id": "e6cdec1e-12d2-4079-af2a-12d90aa50a14",
                         "url": "https://nextjs.org/docs/app/api-reference/functions/unstable_cache",
                         "title": "Functions: unstable_cache | Next.js",
-                        "score": 0.3377958752715734
+                        "score": 0.33779586473814566
                     },
                     {
                         "id": "5ddfea88-f0df-4bfb-9df4-a21de5f81194",
                         "url": "https://nextjs.org/docs/app/api-reference/functions/headers",
                         "title": "Functions: headers | Next.js",
-                        "score": 0.3246284280695765
+                        "score": 0.32462843496467264
                     },
                     {
                         "id": "b6af891e-0df3-49a1-ac25-eaf9b47437aa",
                         "url": "https://nextjs.org/docs/app/api-reference/config/next-config-js/logging",
                         "title": "next.config.js: logging | Next.js",
-                        "score": 0.31585850691517847
+                        "score": 0.31585850637780544
                     },
                     {
                         "id": "5d884ec8-8187-438c-b671-2896d55cf5b9",
                         "url": "https://nextjs.org/docs/app/api-reference/file-conventions/middleware",
                         "title": "File Conventions: middleware.js | Next.js",
-                        "score": 0.3061864477987667
+                        "score": 0.30618642913709737
                     },
                     {
                         "id": "7f219c3f-6170-4f9d-853c-998cc3f9c497",
                         "url": "https://nextjs.org/docs/app/api-reference/functions/fetch",
                         "title": "Functions: fetch | Next.js",
-                        "score": 0.29968443712799697
+                        "score": 0.29968449126161856
                     }
                 ],
                 "recall": 0.3,
@@ -666,6 +808,77 @@
                 "recall": 0.3,
                 "precision": 0.3,
                 "f1_score": 0.3
+            },
+            {
+                "config": {
+                    "vector_model": "nomic-ai/nomic-embed-text-v2-moe",
+                    "vector_size": 768
+                },
+                "results": [
+                    {
+                        "id": "22978d4b-c735-482b-8385-a7c3f47cc721",
+                        "url": "https://nextjs.org/docs/app/api-reference/functions/cookies",
+                        "title": "Functions: cookies | Next.js",
+                        "score": 0.5537981936982213
+                    },
+                    {
+                        "id": "6a8a0498-0a72-41b3-a6e5-97b15ae92bdc",
+                        "url": "https://nextjs.org/docs/app/api-reference/functions/next-request",
+                        "title": "Functions: NextRequest | Next.js",
+                        "score": 0.46792966724870444
+                    },
+                    {
+                        "id": "c15c7c21-0a16-4054-a638-14d16e04d4ed",
+                        "url": "https://nextjs.org/docs/app/api-reference/functions/next-response",
+                        "title": "Functions: NextResponse | Next.js",
+                        "score": 0.3699894273374882
+                    },
+                    {
+                        "id": "ce950e26-c301-43fa-98c6-3235c5735672",
+                        "url": "https://nextjs.org/docs/app/building-your-application/caching",
+                        "title": "Building Your Application: Caching | Next.js",
+                        "score": 0.35236178841469984
+                    },
+                    {
+                        "id": "e7207b7e-079a-4068-8f38-4c31f304185d",
+                        "url": "https://nextjs.org/docs/app/building-your-application/data-fetching/fetching",
+                        "title": "Data Fetching: Data Fetching and Caching | Next.js",
+                        "score": 0.3486698930233656
+                    },
+                    {
+                        "id": "6f7acea8-8d13-4277-907c-92217cba096c",
+                        "url": "https://nextjs.org/docs/app/api-reference/functions/use-search-params",
+                        "title": "Functions: useSearchParams | Next.js",
+                        "score": 0.34604383869892796
+                    },
+                    {
+                        "id": "8f3f9eb9-be72-4013-9c9c-e6b5fddec171",
+                        "url": "https://nextjs.org/docs/app/api-reference/file-conventions/route",
+                        "title": "File Conventions: route.js | Next.js",
+                        "score": 0.33727676587933164
+                    },
+                    {
+                        "id": "8e08b9c6-f7db-4001-8248-a9aa1e9d7338",
+                        "url": "https://nextjs.org/docs/app/getting-started/fetching-data",
+                        "title": "Getting Started: Fetching Data | Next.js",
+                        "score": 0.33356738408083386
+                    },
+                    {
+                        "id": "e4c4c3c4-8676-4322-8dc8-3179f1e995d4",
+                        "url": "https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation",
+                        "title": "File Conventions: instrumentation.js | Next.js",
+                        "score": 0.33084715001220183
+                    },
+                    {
+                        "id": "66349852-d436-4e38-ae49-5003eb4caf01",
+                        "url": "https://nextjs.org/docs/app/api-reference/file-conventions/default",
+                        "title": "File Conventions: default.js | Next.js",
+                        "score": 0.32862054242001326
+                    }
+                ],
+                "recall": 0.1,
+                "precision": 0.1,
+                "f1_score": 0.10000000000000002
             }
         ]
     }
