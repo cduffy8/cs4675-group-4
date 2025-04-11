@@ -1,3 +1,4 @@
+from pymongo import MongoClient
 from service.models.Api import SearchRequest, SearchResponse
 from service.search.SearchService import SearchService
 from service.models.SearchConfig import SearchConfigs, SearchConfig
@@ -12,19 +13,23 @@ import uuid
 import json
 from pathlib import Path
 
-class TestData(BaseModel):
-    testId: uuid.UUID
-    query: str
-    answers: List[uuid.UUID]
+class TestData:
+    def __init__(self, dictionary):
+        self.testId = uuid.UUID(dictionary["testId"])
+        self.query = dictionary["query"]
+        self.answers = [uuid.UUID(answer) for answer in dictionary["answers"]]
+        self.difficulty = dictionary["difficulty"]
     
 class TestResult(BaseModel):
     testId: uuid.UUID
     query: str
+    difficulty: str
     config: SearchConfig
     results: SearchResponse
     precision: float = 0.0
     recall: float = 0.0
     f1_score: float = 0.0
+    reciprocal_rank: float = 0.0
 
     def model_dump(self):
         cleaned_results = []
@@ -45,7 +50,8 @@ class TestResult(BaseModel):
             
             "recall": self.recall,
             "precision": self.precision,
-            "f1_score": self.f1_score
+            "f1_score": self.f1_score,
+            "reciprocal_rank": self.reciprocal_rank
         }
 
 class TestResults:
@@ -81,21 +87,27 @@ def search(query: str, vector_model: str, top_k: int):
     return search_service.search(request)
 
 def load_test_data() -> List[TestData]:
-    test_data_list = []
-    data_file = Path("test/data.json")
+    mongo_db_secret = os.getenv("MONGO_DB")
+    mongo_client = MongoClient(mongo_db_secret)
+    db = mongo_client["web_crawler"]
+    qa_collection = db["generated_qa"]
+    
+    documents = list(qa_collection.find({}))
+    test_data_list : List[TestData] = [TestData(doc) for doc in documents]
+    # data_file = Path("test/data.json")
 
-    if data_file.exists():
-        with open(data_file, "r") as file:
-            data = json.load(file)
-            for item in data:
-                test_data = TestData(
-                    testId=uuid.UUID(item["testId"]),
-                    query=item["query"],
-                    answers=[uuid.UUID(answer) for answer in item["answers"]]
-                )
-                test_data_list.append(test_data)
-    else:
-        print("test/data.json file not found.")
+    # if data_file.exists():
+    #     with open(data_file, "r") as file:
+    #         data = json.load(file)
+    #         for item in data:
+    #             test_data = TestData(
+    #                 testId=uuid.UUID(item["testId"]),
+    #                 query=item["query"],
+    #                 answers=[uuid.UUID(answer) for answer in item["answers"]]
+    #             )
+    #             test_data_list.append(test_data)
+    # else:
+    #     print("test/data.json file not found.")
 
     return test_data_list
 
@@ -134,10 +146,23 @@ def calculate_f1_score(test_data: TestData, test_result: TestResult) -> float:
     
     return f1_score
 
+def calculate_reciprocal_rank(test_data: TestData, test_result: TestResult) -> float:
+    relevant_docs = set([str(answer) for answer in test_data.answers])
+    retrieved_docs = list(result.id for result in test_result.results.results)
+    
+    if not relevant_docs:
+        return 0.0
+    
+    for index, doc_id in enumerate(retrieved_docs):
+        if doc_id in relevant_docs:
+            return 1 / (index + 1)
+    return 0.0
+
 def calculate_scores(test_data: TestData, test_result: TestResult) -> TestResult:
     test_result.recall = calculate_recall(test_data, test_result)
     test_result.precision = calculate_precision(test_data, test_result)
     test_result.f1_score = calculate_f1_score(test_data, test_result)
+    test_result.reciprocal_rank = calculate_reciprocal_rank(test_data, test_result)
     
     return test_result
 
@@ -162,6 +187,7 @@ if __name__ == "__main__":
             test_result = TestResult(
                 testId=item.testId,
                 query=item.query,
+                difficulty=item.difficulty,
                 config=config,
                 results=result
             )
@@ -170,5 +196,52 @@ if __name__ == "__main__":
         all_test_results.append(test_results)
     save_test_results(all_test_results)
     print("Test results saved to test/results.json")
+    
+    scores_per_config = {}
+
+    for test_results in all_test_results:
+        for result in test_results.results:
+            config_name = result.config.vector_model
+            difficulty = result.difficulty
+            if config_name not in scores_per_config:
+                scores_per_config[config_name] = {
+                    "total_f1_score": 0.0,
+                    "total_reciprocal_rank": 0.0,
+                    "total_results": 0,
+                    "hard": {"total_f1_score": 0.0, "total_reciprocal_rank": 0.0, "total_results": 0},
+                    "easy": {"total_f1_score": 0.0, "total_reciprocal_rank": 0.0, "total_results": 0}
+                }
+            scores_per_config[config_name]["total_f1_score"] += result.f1_score
+            scores_per_config[config_name]["total_reciprocal_rank"] += result.reciprocal_rank
+            scores_per_config[config_name]["total_results"] += 1
+
+            if difficulty.lower() == "hard":
+                scores_per_config[config_name]["hard"]["total_f1_score"] += result.f1_score
+                scores_per_config[config_name]["hard"]["total_reciprocal_rank"] += result.reciprocal_rank
+                scores_per_config[config_name]["hard"]["total_results"] += 1
+            elif difficulty.lower() == "easy":
+                scores_per_config[config_name]["easy"]["total_f1_score"] += result.f1_score
+                scores_per_config[config_name]["easy"]["total_reciprocal_rank"] += result.reciprocal_rank
+                scores_per_config[config_name]["easy"]["total_results"] += 1
+
+    for config_name, scores in scores_per_config.items():
+        if scores["total_results"] > 0:
+            average_f1_score = scores["total_f1_score"] / scores["total_results"]
+            mean_reciprocal_rank = scores["total_reciprocal_rank"] / scores["total_results"]
+            print(f"Config: {config_name}")
+            print(f"  Average F1 Score: {average_f1_score:.4f}")
+            print(f"  Mean Reciprocal Rank: {mean_reciprocal_rank:.4f}")
+        else:
+            print(f"Config: {config_name} has no results to calculate averages.")
+
+        for difficulty in ["hard", "easy"]:
+            if scores[difficulty]["total_results"] > 0:
+                avg_f1 = scores[difficulty]["total_f1_score"] / scores[difficulty]["total_results"]
+                mean_rr = scores[difficulty]["total_reciprocal_rank"] / scores[difficulty]["total_results"]
+                print(f"  {difficulty.capitalize()} Cases:")
+                print(f"    Average F1 Score: {avg_f1:.4f}")
+                print(f"    Mean Reciprocal Rank: {mean_rr:.4f}")
+            else:
+                print(f"  {difficulty.capitalize()} Cases: No results to calculate averages.")
     exit(0)
             
