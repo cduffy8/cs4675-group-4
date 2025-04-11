@@ -1,5 +1,5 @@
 from pymongo import MongoClient
-from service.models.Api import SearchRequest, SearchResponse
+from service.models.Api import SearchRequest, SearchResponse, SearchResponseItem
 from service.search.SearchService import SearchService
 from service.models.SearchConfig import SearchConfigs, SearchConfig
 
@@ -12,6 +12,8 @@ from typing import List
 import uuid
 import json
 from pathlib import Path
+
+import requests
 
 class TestData:
     def __init__(self, dictionary):
@@ -82,7 +84,78 @@ print("Loading search service...")
 search_service : SearchService = SearchService(mongo_db_secret, search_configs, initialize=True)
 print("Search service loaded")
 
+search_configs.indexes.append(SearchConfig(vector_model="ANGULAR_JS_SEARCH", index_name= "ANGULAR_JS_SEARCH", vector_size=768))
+
+# allow you to map the next js results to the vector ids
+def get_document_uid_map():
+    mongo_client = MongoClient(mongo_db_secret)
+    db = mongo_client["web_crawler"]
+    crawl_collection = db["crawl_data_angular"]
+    
+    documents = list(crawl_collection.find({}))
+    vector_id_path_map = {}
+    for document in documents:
+        url = document["url"]
+        vector_id = document["vector_id"]
+        vector_id_path_map[url] = vector_id
+        
+    return vector_id_path_map
+
+def get_angular_results(query: str, path_map: dict) -> SearchResponse:
+    base_url = "https://l1xwt2uj7f-dsn.algolia.net/1/indexes/*/queries"
+    parameters = {
+        "x-algolia-agent": "Algolia for JavaScript (4.10.5); Browser (lite)",
+        "x-algolia-api-key": "dfca7ed184db27927a512e5c6668b968",
+        "x-algolia-application-id": "L1XWT2UJ7F"
+    }
+
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "requests":[
+            {
+                "indexName":"angular_v17",
+                "type": "default",
+                "query": query,
+            }
+        ]
+    }
+
+    response = requests.post(base_url, headers=headers, params=parameters, json=payload).json()
+    
+    hits = response['results'][0]['hits']
+
+    search_response_items = []
+    for hit in hits:
+        vector_id = path_map.get(hit["url"].split("#")[0], None)
+        if vector_id is None:
+            print(f"Path not found in path_map: {hit['url']}")
+            continue
+        
+        content = hit.get("content", "failed to get content")
+        content = str(content)
+        search_response_items.append(SearchResponseItem(
+            id=vector_id,
+            url=hit['url'],
+            title=content,
+            text=content,
+            score=0.0 # Placeholder for score
+        ))
+    
+    search_response = SearchResponse(
+        query=query,
+        results=search_response_items,
+        vector_model="ANGULAR_JS_SEARCH"
+    )
+    
+    return search_response
+
+path_map = get_document_uid_map()
 def search(query: str, vector_model: str, top_k: int):
+    if vector_model == "ANGULAR_JS_SEARCH":
+        return get_angular_results(query, path_map)
     request = SearchRequest(query=query, index_name=vector_model, top_k=top_k)
     return search_service.search(request)
 
@@ -90,7 +163,7 @@ def load_test_data() -> List[TestData]:
     mongo_db_secret = os.getenv("MONGO_DB")
     mongo_client = MongoClient(mongo_db_secret)
     db = mongo_client["web_crawler"]
-    qa_collection = db["generated_qa"]
+    qa_collection = db["generated_qa_angular"]
     
     documents = list(qa_collection.find({}))
     test_data_list : List[TestData] = [TestData(doc) for doc in documents]
@@ -101,7 +174,7 @@ def calculate_recall(test_data: TestData, test_result: TestResult) -> float:
     relevant_docs = set([str(answer) for answer in test_data.answers])
     retrieved_docs = set(result.id for result in test_result.results.results)
     
-    if not relevant_docs:
+    if not len(retrieved_docs):
         return 0.0
     
     true_positives = len(relevant_docs.intersection(retrieved_docs))
@@ -113,7 +186,7 @@ def calculate_precision(test_data: TestData, test_result: TestResult) -> float:
     relevant_docs = set([str(answer) for answer in test_data.answers])
     retrieved_docs = set(result.id for result in test_result.results.results)
     
-    if not retrieved_docs:
+    if not len(retrieved_docs):
         return 0.0
     
     true_positives = len(relevant_docs.intersection(retrieved_docs))
