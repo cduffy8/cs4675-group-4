@@ -94,20 +94,6 @@ def load_test_data() -> List[TestData]:
     
     documents = list(qa_collection.find({}))
     test_data_list : List[TestData] = [TestData(doc) for doc in documents]
-    # data_file = Path("test/data.json")
-
-    # if data_file.exists():
-    #     with open(data_file, "r") as file:
-    #         data = json.load(file)
-    #         for item in data:
-    #             test_data = TestData(
-    #                 testId=uuid.UUID(item["testId"]),
-    #                 query=item["query"],
-    #                 answers=[uuid.UUID(answer) for answer in item["answers"]]
-    #             )
-    #             test_data_list.append(test_data)
-    # else:
-    #     print("test/data.json file not found.")
 
     return test_data_list
 
@@ -197,6 +183,8 @@ if __name__ == "__main__":
     save_test_results(all_test_results)
     print("Test results saved to test/results.json")
     
+    
+    ## STAT GENERATION
     scores_per_config = {}
 
     for test_results in all_test_results:
