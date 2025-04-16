@@ -3,7 +3,7 @@ from typing import List
 
 class SearchIndexRequest(BaseModel):
     index_name: str
-    top_k: int = 20
+    top_k: int = 50
     confidence: float = 0.0
     weight: float = 0.0
 

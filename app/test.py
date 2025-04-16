@@ -26,51 +26,77 @@ index_configs = IndexConfigs(indexes=[
 ])
 
 print("Loading search service...")
-search_service : SearchService = SearchService(mongo_db_secret, index_configs, initialize=True)
+search_service : SearchService = SearchService(mongo_db_secret, index_configs, initialize=False, docker=True)
 print("Search service loaded")
 
-test_profiles : List[TestSearchProfile] = [
-    TestSearchProfile(
-        profile_name="BASE all-MiniLM-L6-v2",
-        index_requests=[
-            SearchIndexRequest(index_name="all-MiniLM-L6-v2", top_k=10)
-        ],
-        top_k=10,
-        merge_method="default"
-    ),
-    TestSearchProfile(
-        profile_name="BASE paraphrase-MiniLM-L6-v2",
-        index_requests=[
-            SearchIndexRequest(index_name="paraphrase-MiniLM-L6-v2", top_k=10)
-        ],
-        top_k=10,
-        merge_method="default"
-    ),
-    TestSearchProfile(
-        profile_name="BASE all-distilroberta-v1",
-        index_requests=[
-            SearchIndexRequest(index_name="all-distilroberta-v1", top_k=10)
-        ],
-        top_k=10,
-        merge_method="default"
-    ),
-    TestSearchProfile(
-        profile_name="BASE nomic-embed-text-v2",
-        index_requests=[
-            SearchIndexRequest(index_name="nomic-embed-text-v2", top_k=10)
-        ],
-        top_k=10,
-        merge_method="default"
-    ),
+def generate_single_index_test_profiles(index_configs : IndexConfigs) -> List[TestSearchProfile]:
+    test_profiles : List[TestSearchProfile] = []
     
-    # THE ANGULAR JS SEARCH PROFILE FOR TESTING ONLY
-    TestSearchProfile(
+    for config in index_configs.indexes:
+        for top_k in [10, 20, 50]:
+            for confidence in [0.2, 0.3, 0.4, 0.5, 0.6, 0.7]:
+                test_profiles.append(
+                    TestSearchProfile(
+                        profile_name=f"BASE {top_k} {config.index_name} {confidence}",
+                        index_requests=[
+                            SearchIndexRequest(index_name=config.index_name, top_k=top_k, confidence=confidence)
+                        ],
+                        top_k=top_k,
+                        merge_method="default"
+                    )
+                )
+                
+    test_profiles.append(TestSearchProfile(
+        profile_name= "mini nomic",
+        index_requests=[
+            SearchIndexRequest(index_name="all-MiniLM-L6-v2", top_k=50, confidence=0.4),
+            SearchIndexRequest(index_name="nomic-embed-text-v2", top_k=50, confidence=0.4)
+        ],
+        top_k=10,
+        merge_method="default"
+    ))
+    
+    test_profiles.append(TestSearchProfile(
+        profile_name= "mini roberta",
+        index_requests=[
+            SearchIndexRequest(index_name="all-MiniLM-L6-v2", top_k=50, confidence=0.4),
+            SearchIndexRequest(index_name="all-distilroberta-v1", top_k=50, confidence=0.4)
+        ],
+        top_k=10,
+        merge_method="default"
+    ))
+    
+    test_profiles.append(TestSearchProfile(
+        profile_name= "roberta nomic",
+        index_requests=[
+            SearchIndexRequest(index_name="all-distilroberta-v1", top_k=50, confidence=0.4),
+            SearchIndexRequest(index_name="nomic-embed-text-v2", top_k=50, confidence=0.4)
+        ],
+        top_k=10,
+        merge_method="default"
+    ))
+    
+    test_profiles.append(TestSearchProfile(
+        profile_name= "all",
+        index_requests=[
+            SearchIndexRequest(index_name="all-MiniLM-L6-v2", top_k=50, confidence=0.4),
+            SearchIndexRequest(index_name="nomic-embed-text-v2", top_k=50, confidence=0.4),
+            SearchIndexRequest(index_name="all-distilroberta-v1", top_k=50, confidence=0.4)
+        ],
+        top_k=10,
+        merge_method="default"
+    ))
+                
+    test_profiles.append(TestSearchProfile(
         profile_name= "ANGULAR_JS_SEARCH",
         index_requests=[],
         top_k=10,
         merge_method="default"
-    ),
-]
+    ))
+        
+    return test_profiles
+
+test_profiles : List[TestSearchProfile] = generate_single_index_test_profiles(index_configs)
 
 # allow you to map the next js results to the vector ids
 def get_document_uid_map():
@@ -186,22 +212,22 @@ def get_test_results(test_data: TestData, profiles: List[TestSearchProfile]) -> 
     return test_results
 
 def calculate_recall(test_data: TestData, test_result: TestResult) -> float:
-    relevant_docs = set([str(answer) for answer in test_data.answers])
+    relevant_docs = set(str(answer) for answer in test_data.answers)
     retrieved_docs = set(result.id for result in test_result.results.results)
     
-    if not len(retrieved_docs):
+    if not relevant_docs or len(relevant_docs) == 0:
         return 0.0
     
     true_positives = len(relevant_docs.intersection(retrieved_docs))
-    recall = true_positives / len(retrieved_docs)
+    recall = true_positives / len(relevant_docs)
     
     return recall
 
 def calculate_precision(test_data: TestData, test_result: TestResult) -> float:
-    relevant_docs = set([str(answer) for answer in test_data.answers])
+    relevant_docs = set(str(answer) for answer in test_data.answers)
     retrieved_docs = set(result.id for result in test_result.results.results)
     
-    if not len(retrieved_docs):
+    if not retrieved_docs or len(retrieved_docs) == 0:
         return 0.0
     
     true_positives = len(relevant_docs.intersection(retrieved_docs))
@@ -240,11 +266,12 @@ def calculate_scores(test_data: TestData, test_result: TestResult) -> TestResult
     
     return test_result
 
-def save_test_results(test_results: List[TestResults], test_stats: List[TestStats]):
-    results_file = Path("test/results.json")
-    with open(results_file, "w") as file:
-        json.dump([result.to_dict() for result in test_results], file, indent=4)
-    print("Test results saved to test/results.json")
+def save_test_results(test_results: List[TestResults], test_stats: List[TestStats], save_results: bool = True):
+    if save_results:
+        results_file = Path("test/results.json")
+        with open(results_file, "w") as file:
+            json.dump([result.to_dict() for result in test_results], file, indent=4)
+        print("Test results saved to test/results.json")
     stats_file = Path("test/stats.json")
     with open(stats_file, "w") as file:
         json.dump([stats.to_dict() for stats in test_stats], file, indent=4)

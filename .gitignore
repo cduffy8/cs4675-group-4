@@ -4,3 +4,4 @@ __pycache__/
 cs4675_env/
 .env
 app/qdrant_storage
+test/results.json

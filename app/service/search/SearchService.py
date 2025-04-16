@@ -13,8 +13,8 @@ from service.vector.VectorService import VectorService
 class InternalIndexSearchRequest(BaseModel):
     query: str
     index_name: str
-    top_k: int = 20
-    confidence: float # make optional
+    top_k: int = 50
+    confidence: float = 0.0
     weight: float = 0.0
     vector_model: str
     query_vector: List[float] = []
@@ -22,7 +22,7 @@ class InternalIndexSearchRequest(BaseModel):
 
 class InternalSearchRequest(BaseModel):
     internal_requests: List[InternalIndexSearchRequest] = []
-    merge_method: str = "merge"
+    merge_method: str = "default"
 
 class SearchService:
     def __init__(self, mongo_db_secret: str, search_configs: IndexConfigs, initialize: bool = True, docker : bool = False):
@@ -85,7 +85,7 @@ class SearchService:
         for query in queries:
             internal_requests.extend(self.create_internal_index_search_request_for_query(search_request, query))
             
-        return InternalSearchRequest(internal_requests=internal_requests)
+        return InternalSearchRequest(internal_requests=internal_requests, merge_method=search_request.merge_method)
         
     def create_internal_index_search_request_for_query(self, search_request: SearchRequest, query : str) -> List[InternalIndexSearchRequest]:
         index_configs = [self.get_index_config(index_request.index_name) for index_request in search_request.index_requests]
@@ -126,14 +126,13 @@ class SearchService:
         index_name = search_request.index_name
         query_vector = search_request.query_vector
         top_k = search_request.top_k
-        
-        # TODO: Use the confidence
         confidence = search_request.confidence
         
         search_results = self.qdrant_client.query_points(
             collection_name=index_name,
             query=query_vector,
-            limit=top_k
+            limit=top_k,
+            score_threshold=confidence,
         )
         
         points = search_results.points
@@ -158,12 +157,48 @@ class SearchService:
             query_vector=query_vector,
             results=results
         )
+     
+    # TODO: Efficiency Here   
+    def reciprocal_rank_fusion(self, search_requests: List[InternalIndexSearchRequest]) -> List[SearchResponseItem]:
+        scores = {}
+        for search_request in search_requests:
+            for rank, result in enumerate(search_request.results):
+                if result.id not in scores:
+                    scores[result.id] = 0
+                scores[result.id] += 1 / (rank + 1) * search_request.weight
+        
+        sorted_results = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+        
+            # all search result items
+        search_result_items_dict = {}
+        for search_request in search_requests:
+            for result in search_request.results:
+                if result.id not in search_result_items_dict:
+                    search_result_items_dict[result.id] = result
+                search_result_items_dict[result.id].score += scores[result.id]
+        
+        # create a list of SearchResponseItem objects
+        merged_results = []
+        for id, score in sorted_results:
+            if id in search_result_items_dict:
+                merged_results.append(SearchResponseItem(
+                    id=id,
+                    url=search_result_items_dict[id].url,
+                    title=search_result_items_dict[id].title,
+                    text=search_result_items_dict[id].text,
+                    score=score
+                ))
+        
+        # sort the merged results by score
+        merged_results.sort(key=lambda x: x.score, reverse=True)
+        
+        return merged_results
     
     def merge_results(self, search_request: InternalSearchRequest, merge_method: str) -> List[SearchResponseItem]:
-        ## TODO: Add Merge Methods
-        
-        if merge_method == "first" or len(search_request.internal_requests) == 1:
+        if len(search_request.internal_requests) == 1:
             return search_request.internal_requests[0].results
+        elif merge_method == "rrf" or merge_method == "default":
+            return self.reciprocal_rank_fusion(search_request.internal_requests)
         else:
             print("UNSUPPORTED MERGE METHOD -- USING FIRST")
             return search_request.internal_requests[0].results
@@ -180,6 +215,9 @@ class SearchService:
     def search(self, search_request: SearchRequest) -> SearchResponse:
         internal_search_request = self.create_internal_search_request(search_request)
         search_response = self.execute_internal_search_request(internal_search_request)
+        
+        if len(search_response) > search_request.top_k:
+            search_response = search_response[:search_request.top_k]
         
         return SearchResponse(
             request=search_request,
