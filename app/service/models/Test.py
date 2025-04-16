@@ -1,5 +1,5 @@
 from service.models.Api import SearchResponse
-from service.models.SearchConfig import SearchConfig
+from service.models.SearchConfig import IndexConfig
 
 from pydantic import BaseModel
 from typing import List
@@ -17,7 +17,7 @@ class TestResult(BaseModel):
     testId: uuid.UUID
     query: str
     difficulty: str
-    config: SearchConfig
+    config: IndexConfig
     results: SearchResponse
     precision: float = 0.0
     recall: float = 0.0
@@ -61,8 +61,8 @@ class TestResults:
         }
         
 class TestStats:
-    def __init__(self, config : SearchConfig):
-        self.config : SearchConfig = config
+    def __init__(self, config : IndexConfig):
+        self.config : IndexConfig = config
         
         self.total_percision = 0.0
         self.total_recall = 0.0

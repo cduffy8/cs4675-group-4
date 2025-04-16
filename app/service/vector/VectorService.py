@@ -1,9 +1,9 @@
 from sentence_transformers import SentenceTransformer
 from typing import List
-from service.models.SearchConfig import SearchConfig
+from service.models.SearchConfig import IndexConfig
 
 class VectorService:
-    def __init__(self, search_config: SearchConfig):
+    def __init__(self, search_config: IndexConfig):
         self.model_name : str = search_config.vector_model
         self.model : SentenceTransformer = SentenceTransformer(self.model_name, trust_remote_code=True)
         self.embedding_size : int = search_config.vector_size

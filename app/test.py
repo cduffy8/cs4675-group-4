@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from service.models.Api import SearchRequest, SearchResponse, SearchResponseItem
 from service.search.SearchService import SearchService
-from service.models.SearchConfig import SearchConfigs, SearchConfig
+from service.models.SearchConfig import IndexConfigs, IndexConfig
 from service.models.Test import TestData, TestResult, TestResults, TestStats
 
 from dotenv import load_dotenv
@@ -18,18 +18,18 @@ load_dotenv()
 
 mongo_db_secret = os.getenv("MONGO_DB")
 
-search_configs = SearchConfigs(indexes=[
-    SearchConfig(vector_model="all-MiniLM-L6-v2", index_name="all-MiniLM-L6-v2", vector_size=384),
-    SearchConfig(vector_model="paraphrase-MiniLM-L6-v2", index_name="paraphrase-MiniLM-L6-v2", vector_size=384),
-    SearchConfig(vector_model="all-distilroberta-v1", index_name="all-distilroberta-v1", vector_size=768),
-    SearchConfig(vector_model="nomic-ai/nomic-embed-text-v2-moe", index_name= "nomic-embed-text-v2", vector_size=768),
+search_configs = IndexConfigs(indexes=[
+    IndexConfig(vector_model="all-MiniLM-L6-v2", index_name="all-MiniLM-L6-v2", vector_size=384),
+    IndexConfig(vector_model="paraphrase-MiniLM-L6-v2", index_name="paraphrase-MiniLM-L6-v2", vector_size=384),
+    IndexConfig(vector_model="all-distilroberta-v1", index_name="all-distilroberta-v1", vector_size=768),
+    IndexConfig(vector_model="nomic-ai/nomic-embed-text-v2-moe", index_name= "nomic-embed-text-v2", vector_size=768),
 ])
 
 print("Loading search service...")
 search_service : SearchService = SearchService(mongo_db_secret, search_configs, initialize=True)
 print("Search service loaded")
 
-search_configs.indexes.append(SearchConfig(vector_model="ANGULAR_JS_SEARCH", index_name= "ANGULAR_JS_SEARCH", vector_size=768))
+search_configs.indexes.append(IndexConfig(vector_model="ANGULAR_JS_SEARCH", index_name= "ANGULAR_JS_SEARCH", vector_size=768))
 
 # allow you to map the next js results to the vector ids
 def get_document_uid_map():
@@ -118,7 +118,7 @@ def load_test_data() -> List[TestData]:
 
     return test_data_list
 
-def get_test_results(test_data: TestData, configs: SearchConfigs) -> TestResults:
+def get_test_results(test_data: TestData, configs: IndexConfigs) -> TestResults:
     test_results = TestResults(test_data)
     for config in configs.indexes:
         result = search(test_data.query, config.index_name, 10)
@@ -200,7 +200,7 @@ def save_test_results(test_results: List[TestResults], test_stats: List[TestStat
     print("Test stats saved to test/stats.json")
     
 def calculate_test_stats(all_test_results: List[TestResults]) -> List[TestStats]:
-    stats_dict : Dict[SearchConfig, TestStats] = dict()
+    stats_dict : Dict[IndexConfig, TestStats] = dict()
     
     for test_results in all_test_results:
         for result in test_results.results:

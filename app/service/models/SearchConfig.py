@@ -1,7 +1,7 @@
 from typing import List
 from pydantic import BaseModel
 
-class SearchConfig(BaseModel):
+class IndexConfig(BaseModel):
     vector_model: str
     index_name: str
     vector_size: int
@@ -10,8 +10,9 @@ class SearchConfig(BaseModel):
         return hash((self.vector_model, self.index_name, self.vector_size))
 
     def __eq__(self, other):
-        if not isinstance(other, SearchConfig):
+        if not isinstance(other, IndexConfig):
             return NotImplemented
         return (self.vector_model, self.index_name, self.vector_size) == (other.vector_model, other.index_name, other.vector_size)
-class SearchConfigs(BaseModel):
-    indexes : List[SearchConfig]
+
+class IndexConfigs(BaseModel):
+    indexes : List[IndexConfig]

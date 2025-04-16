@@ -2,21 +2,21 @@ from typing import Dict, List
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, VectorParams, Distance
 
-from service.models.SearchConfig import SearchConfig, SearchConfigs
+from service.models.SearchConfig import IndexConfig, IndexConfigs
 from service.models.Api import SearchRequest, SearchResponseItem, SearchResponse
 from service.database.MongoDB import CrawlDataCollection
 from service.models.Asset import Asset
 from service.vector.VectorService import VectorService
 
 class SearchService:
-    def __init__(self, mongo_db_secret: str, search_configs: SearchConfigs, initialize: bool = True, docker : bool = False):
+    def __init__(self, mongo_db_secret: str, search_configs: IndexConfigs, initialize: bool = True, docker : bool = False):
         self.crawl_data_collection : CrawlDataCollection = CrawlDataCollection(mongo_db_secret)
         
         self.vector_services : Dict[str, VectorService] = {}
         for search_config in search_configs.indexes:
             self.vector_services[search_config.vector_model] = VectorService(search_config)
             
-        self.search_configs : SearchConfigs = search_configs
+        self.search_configs : IndexConfigs = search_configs
             
         ## keep this in case the collection gets too big somehow
         if docker:
@@ -27,7 +27,7 @@ class SearchService:
         if initialize:
             self.initialize_indexes()
             
-    def get_search_config(self, index_name: str) -> SearchConfig:
+    def get_search_config(self, index_name: str) -> IndexConfig:
         for config in self.search_configs.indexes:
             if config.index_name == index_name:
                 return config
@@ -58,7 +58,7 @@ class SearchService:
         query = search_request.query
         top_k = search_request.top_k
         
-        config : SearchConfig  = self.get_search_config(search_request.index_name)
+        config : IndexConfig  = self.get_search_config(search_request.index_name)
         
         query_vector = self.get_query_vector(query, config.vector_model)
         
