@@ -5,7 +5,7 @@ class SearchIndexRequest(BaseModel):
     index_name: str
     top_k: int = 50
     confidence: float = 0.0
-    weight: float = 0.0
+    weight: float = 1.0
 
     def __hash__(self):
         return hash((self.index_name, self.top_k, self.confidence, self.weight))

@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, VectorParams, Distance
 
+from service.llm.LLMService import LLMService
 from service.models.SearchConfig import IndexConfig, IndexConfigs
 from service.models.Api import SearchRequest, SearchResponseItem, SearchResponse
 from service.database.MongoDB import CrawlDataCollection
@@ -15,7 +16,7 @@ class InternalIndexSearchRequest(BaseModel):
     index_name: str
     top_k: int = 50
     confidence: float = 0.0
-    weight: float = 0.0
+    weight: float = 1.0
     vector_model: str
     query_vector: List[float] = []
     results: Optional[List[SearchResponseItem]] = []
@@ -42,6 +43,8 @@ class SearchService:
         
         if initialize:
             self.initialize_indexes()
+            
+        self.llm_service = LLMService()
             
     def get_index_config(self, index_name: str) -> IndexConfig:
         for config in self.search_configs.indexes:
@@ -70,15 +73,20 @@ class SearchService:
             
         self.qdrant_client.upsert(collection_name=index_name, wait=True, points=point_structs)
         
-    def get_all_queries(self, search_request: SearchRequest) -> List[str]:
-        # TODO: Add Model Query Generation Here
+    def generate_queries(self, search_request: SearchRequest) -> List[str]:
+        generated_queries = self.llm_service.generate_queries(search_request.query)
+        if len(generated_queries) > 0:
+            print(f"From {search_request.query} Generated queries: {generated_queries}")
+        else:
+            generated_queries = []
+        generated_queries.append(search_request.query)
         
-        queries = [search_request.query]
-        return queries
+        return generated_queries      
         
     def create_internal_search_request(self, search_request: SearchRequest) -> InternalSearchRequest:
         # get all of the queries
-        queries = self.get_all_queries(search_request)
+        queries = self.generate_queries(search_request)
+        print(f"Generated queries: {queries}")
         
         # create the internal search request
         internal_requests = []
@@ -170,12 +178,12 @@ class SearchService:
         sorted_results = sorted(scores.items(), key=lambda x: x[1], reverse=True)
         
             # all search result items
-        search_result_items_dict = {}
+        search_result_items_dict : Dict[str, SearchResponseItem] = {}
         for search_request in search_requests:
             for result in search_request.results:
                 if result.id not in search_result_items_dict:
                     search_result_items_dict[result.id] = result
-                search_result_items_dict[result.id].score += scores[result.id]
+                search_result_items_dict[result.id].score += scores[result.id] * search_request.weight
         
         # create a list of SearchResponseItem objects
         merged_results = []
