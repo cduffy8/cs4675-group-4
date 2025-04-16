@@ -22,6 +22,7 @@ class SearchIndexRequest(BaseModel):
 
 class SearchRequest(BaseModel):
     query: str
+    generate_queries: bool = False
     index_requests: List[SearchIndexRequest]
     top_k : int = 10
     merge_method: str = "default"

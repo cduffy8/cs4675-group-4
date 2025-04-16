@@ -26,7 +26,7 @@ index_configs = IndexConfigs(indexes=[
 ])
 
 print("Loading search service...")
-search_service : SearchService = SearchService(mongo_db_secret, index_configs, initialize=False, docker=True)
+search_service : SearchService = SearchService(mongo_db_secret, index_configs, initialize=True, docker=False)
 print("Search service loaded")
 
 def generate_single_index_test_profiles(index_configs : IndexConfigs) -> List[TestSearchProfile]:
@@ -266,7 +266,7 @@ def calculate_scores(test_data: TestData, test_result: TestResult) -> TestResult
     
     return test_result
 
-def save_test_results(test_results: List[TestResults], test_stats: List[TestStats], save_results: bool = True):
+def save_test_results(test_results: List[TestResults], test_stats: List[TestStats], save_results: bool = False):
     if save_results:
         results_file = Path("test/results.json")
         with open(results_file, "w") as file:

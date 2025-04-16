@@ -74,6 +74,9 @@ class SearchService:
         self.qdrant_client.upsert(collection_name=index_name, wait=True, points=point_structs)
         
     def generate_queries(self, search_request: SearchRequest) -> List[str]:
+        if not search_request.generate_queries:
+            return [search_request.query]
+        
         generated_queries = self.llm_service.generate_queries(search_request.query)
         if len(generated_queries) > 0:
             print(f"From {search_request.query} Generated queries: {generated_queries}")
