@@ -2,72 +2,17 @@ from pymongo import MongoClient
 from service.models.Api import SearchRequest, SearchResponse, SearchResponseItem
 from service.search.SearchService import SearchService
 from service.models.SearchConfig import SearchConfigs, SearchConfig
+from service.models.Test import TestData, TestResult, TestResults, TestStats
 
 from dotenv import load_dotenv
 import os
 
-from pydantic import BaseModel
-from typing import List
+from typing import Dict, List
 
-import uuid
 import json
 from pathlib import Path
 
 import requests
-
-class TestData:
-    def __init__(self, dictionary):
-        self.testId = uuid.UUID(dictionary["testId"])
-        self.query = dictionary["query"]
-        self.answers = [uuid.UUID(answer) for answer in dictionary["answers"]]
-        self.difficulty = dictionary["difficulty"]
-    
-class TestResult(BaseModel):
-    testId: uuid.UUID
-    query: str
-    difficulty: str
-    config: SearchConfig
-    results: SearchResponse
-    precision: float = 0.0
-    recall: float = 0.0
-    f1_score: float = 0.0
-    reciprocal_rank: float = 0.0
-
-    def model_dump(self):
-        cleaned_results = []
-        for result in self.results.results:
-            cleaned_results.append({
-                "id": result.id,
-                "url": result.url,
-                "title": result.title,
-                "score": result.score
-            })
-        
-        return {
-            "config": {
-                "vector_model": self.config.vector_model,
-                "vector_size": self.config.vector_size
-            },
-            "results": cleaned_results,
-            
-            "recall": self.recall,
-            "precision": self.precision,
-            "f1_score": self.f1_score,
-            "reciprocal_rank": self.reciprocal_rank
-        }
-
-class TestResults:
-    def __init__(self, test_data: TestData):
-        self.test_data = test_data
-        self.results : List[TestResult] = []
-        
-    def to_dict(self):
-        return {
-            "testId": str(self.test_data.testId),
-            "query": self.test_data.query,
-            "answers": [str(answer) for answer in self.test_data.answers],
-            "results": [result.model_dump() for result in self.results]
-        }
 
 load_dotenv()
 
@@ -101,7 +46,7 @@ def get_document_uid_map():
         
     return vector_id_path_map
 
-def get_angular_results(query: str, path_map: dict) -> SearchResponse:
+def make_angular_request(query: str) -> dict:
     base_url = "https://l1xwt2uj7f-dsn.algolia.net/1/indexes/*/queries"
     parameters = {
         "x-algolia-agent": "Algolia for JavaScript (4.10.5); Browser (lite)",
@@ -123,7 +68,10 @@ def get_angular_results(query: str, path_map: dict) -> SearchResponse:
         ]
     }
 
-    response = requests.post(base_url, headers=headers, params=parameters, json=payload).json()
+    return requests.post(base_url, headers=headers, params=parameters, json=payload).json()
+
+def get_angular_results(query: str, path_map: dict) -> SearchResponse:
+    response = make_angular_request(query)
     
     hits = response['results'][0]['hits']
 
@@ -131,7 +79,7 @@ def get_angular_results(query: str, path_map: dict) -> SearchResponse:
     for hit in hits:
         vector_id = path_map.get(hit["url"].split("#")[0], None)
         if vector_id is None:
-            print(f"Path not found in path_map: {hit['url']}")
+            print(f"WARNING: Path not found in path_map: {hit['url']}")
             continue
         
         content = hit.get("content", "failed to get content")
@@ -169,6 +117,22 @@ def load_test_data() -> List[TestData]:
     test_data_list : List[TestData] = [TestData(doc) for doc in documents]
 
     return test_data_list
+
+def get_test_results(test_data: TestData, configs: SearchConfigs) -> TestResults:
+    test_results = TestResults(test_data)
+    for config in configs.indexes:
+        result = search(test_data.query, config.index_name, 10)
+        test_result = TestResult(
+            testId=test_data.testId,
+            query=test_data.query,
+            difficulty=test_data.difficulty,
+            config=config,
+            results=result
+        )
+        test_result = calculate_scores(test_data, test_result)
+        test_results.results.append(test_result)
+        
+    return test_results
 
 def calculate_recall(test_data: TestData, test_result: TestResult) -> float:
     relevant_docs = set([str(answer) for answer in test_data.answers])
@@ -225,11 +189,31 @@ def calculate_scores(test_data: TestData, test_result: TestResult) -> TestResult
     
     return test_result
 
-def save_test_results(test_results: List[TestResults]):
+def save_test_results(test_results: List[TestResults], test_stats: List[TestStats]):
     results_file = Path("test/results.json")
     with open(results_file, "w") as file:
         json.dump([result.to_dict() for result in test_results], file, indent=4)
-
+    print("Test results saved to test/results.json")
+    stats_file = Path("test/stats.json")
+    with open(stats_file, "w") as file:
+        json.dump([stats.to_dict() for stats in test_stats], file, indent=4)
+    print("Test stats saved to test/stats.json")
+    
+def calculate_test_stats(all_test_results: List[TestResults]) -> List[TestStats]:
+    stats_dict : Dict[SearchConfig, TestStats] = dict()
+    
+    for test_results in all_test_results:
+        for result in test_results.results:
+            if result.config not in stats_dict:
+                stats_dict[result.config] = TestStats(result.config)
+                
+            stats_dict[result.config].add_result(result)
+            
+    for config, stats in stats_dict.items():
+        stats.calculate_stats()
+    
+    return list(stats_dict.values())
+ 
 if __name__ == "__main__":
     test_data : List[TestData] = load_test_data()
     all_test_results : List[TestResults] = []
@@ -238,71 +222,13 @@ if __name__ == "__main__":
         print("No test data found.")
         exit(1)
     
-    for item in test_data:
-        print(f"Testing {item.query}")
-        test_results = TestResults(item)
-        for config in search_configs.indexes:
-            result = search(item.query, config.index_name, 10)
-            test_result = TestResult(
-                testId=item.testId,
-                query=item.query,
-                difficulty=item.difficulty,
-                config=config,
-                results=result
-            )
-            test_result = calculate_scores(item, test_result)
-            test_results.results.append(test_result)
+    ## RUN TEST QUERIES
+    for index, item in enumerate(test_data):
+        print(f'Test {index + 1}/{len(test_data)} -- "{item.query}"')
+        test_results = get_test_results(item, search_configs)
         all_test_results.append(test_results)
-    save_test_results(all_test_results)
-    print("Test results saved to test/results.json")
     
-    
-    ## STAT GENERATION
-    scores_per_config = {}
-
-    for test_results in all_test_results:
-        for result in test_results.results:
-            config_name = result.config.vector_model
-            difficulty = result.difficulty
-            if config_name not in scores_per_config:
-                scores_per_config[config_name] = {
-                    "total_f1_score": 0.0,
-                    "total_reciprocal_rank": 0.0,
-                    "total_results": 0,
-                    "hard": {"total_f1_score": 0.0, "total_reciprocal_rank": 0.0, "total_results": 0},
-                    "easy": {"total_f1_score": 0.0, "total_reciprocal_rank": 0.0, "total_results": 0}
-                }
-            scores_per_config[config_name]["total_f1_score"] += result.f1_score
-            scores_per_config[config_name]["total_reciprocal_rank"] += result.reciprocal_rank
-            scores_per_config[config_name]["total_results"] += 1
-
-            if difficulty.lower() == "hard":
-                scores_per_config[config_name]["hard"]["total_f1_score"] += result.f1_score
-                scores_per_config[config_name]["hard"]["total_reciprocal_rank"] += result.reciprocal_rank
-                scores_per_config[config_name]["hard"]["total_results"] += 1
-            elif difficulty.lower() == "easy":
-                scores_per_config[config_name]["easy"]["total_f1_score"] += result.f1_score
-                scores_per_config[config_name]["easy"]["total_reciprocal_rank"] += result.reciprocal_rank
-                scores_per_config[config_name]["easy"]["total_results"] += 1
-
-    for config_name, scores in scores_per_config.items():
-        if scores["total_results"] > 0:
-            average_f1_score = scores["total_f1_score"] / scores["total_results"]
-            mean_reciprocal_rank = scores["total_reciprocal_rank"] / scores["total_results"]
-            print(f"Config: {config_name}")
-            print(f"  Average F1 Score: {average_f1_score:.4f}")
-            print(f"  Mean Reciprocal Rank: {mean_reciprocal_rank:.4f}")
-        else:
-            print(f"Config: {config_name} has no results to calculate averages.")
-
-        for difficulty in ["hard", "easy"]:
-            if scores[difficulty]["total_results"] > 0:
-                avg_f1 = scores[difficulty]["total_f1_score"] / scores[difficulty]["total_results"]
-                mean_rr = scores[difficulty]["total_reciprocal_rank"] / scores[difficulty]["total_results"]
-                print(f"  {difficulty.capitalize()} Cases:")
-                print(f"    Average F1 Score: {avg_f1:.4f}")
-                print(f"    Mean Reciprocal Rank: {mean_rr:.4f}")
-            else:
-                print(f"  {difficulty.capitalize()} Cases: No results to calculate averages.")
+    test_stats = calculate_test_stats(all_test_results)
+    save_test_results(all_test_results, test_stats)
     exit(0)
             

@@ -9,7 +9,7 @@ from service.models.Asset import Asset
 from service.vector.VectorService import VectorService
 
 class SearchService:
-    def __init__(self, mongo_db_secret: str, search_configs: SearchConfigs, initialize: bool = True):
+    def __init__(self, mongo_db_secret: str, search_configs: SearchConfigs, initialize: bool = True, docker : bool = False):
         self.crawl_data_collection : CrawlDataCollection = CrawlDataCollection(mongo_db_secret)
         
         self.vector_services : Dict[str, VectorService] = {}
@@ -19,8 +19,10 @@ class SearchService:
         self.search_configs : SearchConfigs = search_configs
             
         ## keep this in case the collection gets too big somehow
-        # self.qdrant_client : QdrantClient = QdrantClient(url="http://localhost:6333") 
-        self.qdrant_client : QdrantClient = QdrantClient(location=":memory:")
+        if docker:
+            self.qdrant_client : QdrantClient = QdrantClient(url="http://localhost:6333")
+        else:
+            self.qdrant_client : QdrantClient = QdrantClient(location=":memory:")
         
         if initialize:
             self.initialize_indexes()
@@ -34,7 +36,7 @@ class SearchService:
     def initialize_indexes(self):
         assets: List[Asset] = self.crawl_data_collection.get_all()
         for config in self.search_configs.indexes:
-            self.qdrant_client.delete_collection(collection_name=config.vector_model)
+            self.qdrant_client.delete_collection(collection_name=config.index_name)
             self.qdrant_client.create_collection(
                 collection_name=config.index_name,
                 vectors_config=VectorParams(size=config.vector_size, distance=Distance.COSINE),
