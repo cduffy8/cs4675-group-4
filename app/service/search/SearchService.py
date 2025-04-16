@@ -31,7 +31,8 @@ class SearchService:
         
         self.vector_services : Dict[str, VectorService] = {}
         for search_config in search_configs.indexes:
-            self.vector_services[search_config.vector_model] = VectorService(search_config)
+            if not search_config.vector_model in self.vector_services:
+                self.vector_services[search_config.vector_model] = VectorService(search_config)
             
         self.search_configs : IndexConfigs = search_configs
             
@@ -89,7 +90,6 @@ class SearchService:
     def create_internal_search_request(self, search_request: SearchRequest) -> InternalSearchRequest:
         # get all of the queries
         queries = self.generate_queries(search_request)
-        print(f"Generated queries: {queries}")
         
         # create the internal search request
         internal_requests = []

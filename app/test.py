@@ -23,6 +23,10 @@ index_configs = IndexConfigs(indexes=[
     IndexConfig(vector_model="paraphrase-MiniLM-L6-v2", index_name="paraphrase-MiniLM-L6-v2", vector_size=384),
     IndexConfig(vector_model="all-distilroberta-v1", index_name="all-distilroberta-v1", vector_size=768),
     IndexConfig(vector_model="nomic-ai/nomic-embed-text-v2-moe", index_name= "nomic-embed-text-v2", vector_size=768),
+    IndexConfig(vector_model="all-MiniLM-L6-v2", index_name="summary-all-MiniLM-L6-v2", vector_size=384),
+    IndexConfig(vector_model="paraphrase-MiniLM-L6-v2", index_name="summary-paraphrase-MiniLM-L6-v2", vector_size=384),
+    IndexConfig(vector_model="all-distilroberta-v1", index_name="summary-all-distilroberta-v1", vector_size=768),
+    IndexConfig(vector_model="nomic-ai/nomic-embed-text-v2-moe", index_name= "summary-nomic-embed-text-v2", vector_size=768),
 ])
 
 print("Loading search service...")
@@ -34,7 +38,7 @@ def generate_single_index_test_profiles(index_configs : IndexConfigs) -> List[Te
     
     for config in index_configs.indexes:
         for top_k in [10, 20, 50]:
-            for confidence in [0.2, 0.3, 0.4, 0.5, 0.6, 0.7]:
+            for confidence in [0.2,0.3, 0.4, 0.5, 0.6, 0.7, 0.8]:
                 test_profiles.append(
                     TestSearchProfile(
                         profile_name=f"BASE {top_k} {config.index_name} {confidence}",
@@ -45,54 +49,6 @@ def generate_single_index_test_profiles(index_configs : IndexConfigs) -> List[Te
                         merge_method="default"
                     )
                 )
-                
-    test_profiles.append(TestSearchProfile(
-        profile_name= "mini nomic",
-        index_requests=[
-            SearchIndexRequest(index_name="all-MiniLM-L6-v2", top_k=50, confidence=0.4),
-            SearchIndexRequest(index_name="nomic-embed-text-v2", top_k=50, confidence=0.4)
-        ],
-        top_k=10,
-        merge_method="default"
-    ))
-    
-    test_profiles.append(TestSearchProfile(
-        profile_name= "mini roberta",
-        index_requests=[
-            SearchIndexRequest(index_name="all-MiniLM-L6-v2", top_k=50, confidence=0.4),
-            SearchIndexRequest(index_name="all-distilroberta-v1", top_k=50, confidence=0.4)
-        ],
-        top_k=10,
-        merge_method="default"
-    ))
-    
-    test_profiles.append(TestSearchProfile(
-        profile_name= "roberta nomic",
-        index_requests=[
-            SearchIndexRequest(index_name="all-distilroberta-v1", top_k=50, confidence=0.4),
-            SearchIndexRequest(index_name="nomic-embed-text-v2", top_k=50, confidence=0.4)
-        ],
-        top_k=10,
-        merge_method="default"
-    ))
-    
-    test_profiles.append(TestSearchProfile(
-        profile_name= "all",
-        index_requests=[
-            SearchIndexRequest(index_name="all-MiniLM-L6-v2", top_k=50, confidence=0.4),
-            SearchIndexRequest(index_name="nomic-embed-text-v2", top_k=50, confidence=0.4),
-            SearchIndexRequest(index_name="all-distilroberta-v1", top_k=50, confidence=0.4)
-        ],
-        top_k=10,
-        merge_method="default"
-    ))
-                
-    test_profiles.append(TestSearchProfile(
-        profile_name= "ANGULAR_JS_SEARCH",
-        index_requests=[],
-        top_k=10,
-        merge_method="default"
-    ))
         
     return test_profiles
 
