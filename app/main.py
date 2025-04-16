@@ -34,9 +34,8 @@ print("Loading search service...")
 search_service : SearchService = SearchService(mongo_db_secret, search_configs)
 print("Search service loaded")
 
-@app.get("/search")
-async def search(query: str, index_name: str, top_k: int):
-    request = SearchRequest(query=query, index_name=index_name, top_k=top_k)
+@app.post("/search")
+async def search(request: SearchRequest):
     return search_service.search(request)
 
 if __name__ == "__main__":

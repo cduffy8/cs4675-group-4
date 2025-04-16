@@ -1,8 +1,8 @@
 from pymongo import MongoClient
-from service.models.Api import SearchRequest, SearchResponse, SearchResponseItem
+from service.models.Api import SearchIndexRequest, SearchRequest, SearchResponse, SearchResponseItem
 from service.search.SearchService import SearchService
 from service.models.SearchConfig import IndexConfigs, IndexConfig
-from service.models.Test import TestData, TestResult, TestResults, TestStats
+from service.models.Test import TestData, TestResult, TestResults, TestSearchProfile, TestStats
 
 from dotenv import load_dotenv
 import os
@@ -18,7 +18,7 @@ load_dotenv()
 
 mongo_db_secret = os.getenv("MONGO_DB")
 
-search_configs = IndexConfigs(indexes=[
+index_configs = IndexConfigs(indexes=[
     IndexConfig(vector_model="all-MiniLM-L6-v2", index_name="all-MiniLM-L6-v2", vector_size=384),
     IndexConfig(vector_model="paraphrase-MiniLM-L6-v2", index_name="paraphrase-MiniLM-L6-v2", vector_size=384),
     IndexConfig(vector_model="all-distilroberta-v1", index_name="all-distilroberta-v1", vector_size=768),
@@ -26,10 +26,51 @@ search_configs = IndexConfigs(indexes=[
 ])
 
 print("Loading search service...")
-search_service : SearchService = SearchService(mongo_db_secret, search_configs, initialize=True)
+search_service : SearchService = SearchService(mongo_db_secret, index_configs, initialize=True)
 print("Search service loaded")
 
-search_configs.indexes.append(IndexConfig(vector_model="ANGULAR_JS_SEARCH", index_name= "ANGULAR_JS_SEARCH", vector_size=768))
+test_profiles : List[TestSearchProfile] = [
+    TestSearchProfile(
+        profile_name="BASE all-MiniLM-L6-v2",
+        index_requests=[
+            SearchIndexRequest(index_name="all-MiniLM-L6-v2", top_k=10)
+        ],
+        top_k=10,
+        merge_method="default"
+    ),
+    TestSearchProfile(
+        profile_name="BASE paraphrase-MiniLM-L6-v2",
+        index_requests=[
+            SearchIndexRequest(index_name="paraphrase-MiniLM-L6-v2", top_k=10)
+        ],
+        top_k=10,
+        merge_method="default"
+    ),
+    TestSearchProfile(
+        profile_name="BASE all-distilroberta-v1",
+        index_requests=[
+            SearchIndexRequest(index_name="all-distilroberta-v1", top_k=10)
+        ],
+        top_k=10,
+        merge_method="default"
+    ),
+    TestSearchProfile(
+        profile_name="BASE nomic-embed-text-v2",
+        index_requests=[
+            SearchIndexRequest(index_name="nomic-embed-text-v2", top_k=10)
+        ],
+        top_k=10,
+        merge_method="default"
+    ),
+    
+    # THE ANGULAR JS SEARCH PROFILE FOR TESTING ONLY
+    TestSearchProfile(
+        profile_name= "ANGULAR_JS_SEARCH",
+        index_requests=[],
+        top_k=10,
+        merge_method="default"
+    ),
+]
 
 # allow you to map the next js results to the vector ids
 def get_document_uid_map():
@@ -93,18 +134,27 @@ def get_angular_results(query: str, path_map: dict) -> SearchResponse:
         ))
     
     search_response = SearchResponse(
-        query=query,
-        results=search_response_items,
-        vector_model="ANGULAR_JS_SEARCH"
+        request=SearchRequest(
+            query=query,
+            index_requests=[SearchIndexRequest(index_name="ANGULAR_JS_SEARCH", top_k=10)],
+            top_k=10,
+            merge_method="default"
+        ),
+        results=search_response_items
     )
     
     return search_response
 
 path_map = get_document_uid_map()
-def search(query: str, vector_model: str, top_k: int):
-    if vector_model == "ANGULAR_JS_SEARCH":
+def search(query: str, profile : TestSearchProfile) -> SearchResponse:
+    if profile.profile_name == "ANGULAR_JS_SEARCH":
         return get_angular_results(query, path_map)
-    request = SearchRequest(query=query, index_name=vector_model, top_k=top_k)
+    request = SearchRequest(
+        query=query,
+        index_requests=profile.index_requests,
+        top_k=profile.top_k,
+        merge_method=profile.merge_method
+    )
     return search_service.search(request)
 
 def load_test_data() -> List[TestData]:
@@ -118,15 +168,16 @@ def load_test_data() -> List[TestData]:
 
     return test_data_list
 
-def get_test_results(test_data: TestData, configs: IndexConfigs) -> TestResults:
+def get_test_results(test_data: TestData, profiles: List[TestSearchProfile]) -> TestResults:
     test_results = TestResults(test_data)
-    for config in configs.indexes:
-        result = search(test_data.query, config.index_name, 10)
+    
+    for profile in profiles:
+        result = search(test_data.query, profile)
         test_result = TestResult(
             testId=test_data.testId,
             query=test_data.query,
             difficulty=test_data.difficulty,
-            config=config,
+            profile=profile,
             results=result
         )
         test_result = calculate_scores(test_data, test_result)
@@ -200,14 +251,14 @@ def save_test_results(test_results: List[TestResults], test_stats: List[TestStat
     print("Test stats saved to test/stats.json")
     
 def calculate_test_stats(all_test_results: List[TestResults]) -> List[TestStats]:
-    stats_dict : Dict[IndexConfig, TestStats] = dict()
+    stats_dict : Dict[TestSearchProfile, TestStats] = dict()
     
     for test_results in all_test_results:
         for result in test_results.results:
-            if result.config not in stats_dict:
-                stats_dict[result.config] = TestStats(result.config)
+            if result.profile not in stats_dict:
+                stats_dict[result.profile] = TestStats(result.profile)
                 
-            stats_dict[result.config].add_result(result)
+            stats_dict[result.profile].add_result(result)
             
     for config, stats in stats_dict.items():
         stats.calculate_stats()
@@ -225,7 +276,7 @@ if __name__ == "__main__":
     ## RUN TEST QUERIES
     for index, item in enumerate(test_data):
         print(f'Test {index + 1}/{len(test_data)} -- "{item.query}"')
-        test_results = get_test_results(item, search_configs)
+        test_results = get_test_results(item, test_profiles)
         all_test_results.append(test_results)
     
     test_stats = calculate_test_stats(all_test_results)

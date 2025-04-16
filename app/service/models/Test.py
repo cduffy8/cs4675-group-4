@@ -1,10 +1,52 @@
-from service.models.Api import SearchResponse
+from service.models.Api import SearchIndexRequest, SearchResponse
 from service.models.SearchConfig import IndexConfig
 
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 import uuid
+
+class TestSearchProfile(BaseModel):
+    profile_name : Optional[str] = None
+    index_requests: List[SearchIndexRequest]
+    top_k: int = 10
+    merge_method: str = "default"
+    
+    def model_dump(self):
+        cleaned_requests = []
+        for request in self.index_requests:
+            cleaned_requests.append({
+                "index_name": request.index_name,
+                "top_k": request.top_k,
+                "confidence": request.confidence,
+                "weight": request.weight
+            })
+        
+        return {
+            "profile_name": self.profile_name,
+            "index_requests": cleaned_requests,
+            "top_k": self.top_k,
+            "merge_method": self.merge_method
+        }
+        
+    def __hash__(self):
+        return hash((
+            self.profile_name,
+            tuple(sorted(self.index_requests, key=lambda x: (x.index_name, x.top_k, x.confidence, x.weight))),
+            self.top_k,
+            self.merge_method
+        ))
+
+    def __eq__(self, other):
+        if not isinstance(other, TestSearchProfile):
+            return False
+        return (
+            self.profile_name == other.profile_name and
+            sorted(self.index_requests, key=lambda x: (x.index_name, x.top_k, x.confidence, x.weight)) ==
+            sorted(other.index_requests, key=lambda x: (x.index_name, x.top_k, x.confidence, x.weight)) and
+            self.top_k == other.top_k and
+            self.merge_method == other.merge_method
+        )
 
 class TestData:
     def __init__(self, dictionary):
@@ -17,7 +59,7 @@ class TestResult(BaseModel):
     testId: uuid.UUID
     query: str
     difficulty: str
-    config: IndexConfig
+    profile: TestSearchProfile
     results: SearchResponse
     precision: float = 0.0
     recall: float = 0.0
@@ -35,10 +77,7 @@ class TestResult(BaseModel):
             })
         
         return {
-            "config": {
-                "vector_model": self.config.vector_model,
-                "vector_size": self.config.vector_size
-            },
+            "profile": self.profile.model_dump(),
             "results": cleaned_results,
             
             "recall": self.recall,
@@ -61,8 +100,8 @@ class TestResults:
         }
         
 class TestStats:
-    def __init__(self, config : IndexConfig):
-        self.config : IndexConfig = config
+    def __init__(self, profile : TestSearchProfile):
+        self.profile : TestSearchProfile = profile
         
         self.total_percision = 0.0
         self.total_recall = 0.0
@@ -124,8 +163,7 @@ class TestStats:
             
     def to_dict(self):
         return {
-            "vector_model": self.config.vector_model,
-            "vector_size": self.config.vector_size,
+            "profile": self.profile.model_dump(),
             
             "total_percision": self.total_percision,
             "total_recall": self.total_recall,

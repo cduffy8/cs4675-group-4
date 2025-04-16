@@ -1,4 +1,5 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
+from pydantic import BaseModel
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, VectorParams, Distance
 
@@ -7,6 +8,21 @@ from service.models.Api import SearchRequest, SearchResponseItem, SearchResponse
 from service.database.MongoDB import CrawlDataCollection
 from service.models.Asset import Asset
 from service.vector.VectorService import VectorService
+
+## TODO: Pass an Index Config into this
+class InternalIndexSearchRequest(BaseModel):
+    query: str
+    index_name: str
+    top_k: int = 20
+    confidence: float # make optional
+    weight: float = 0.0
+    vector_model: str
+    query_vector: List[float] = []
+    results: Optional[List[SearchResponseItem]] = []
+
+class InternalSearchRequest(BaseModel):
+    internal_requests: List[InternalIndexSearchRequest] = []
+    merge_method: str = "merge"
 
 class SearchService:
     def __init__(self, mongo_db_secret: str, search_configs: IndexConfigs, initialize: bool = True, docker : bool = False):
@@ -27,7 +43,7 @@ class SearchService:
         if initialize:
             self.initialize_indexes()
             
-    def get_search_config(self, index_name: str) -> IndexConfig:
+    def get_index_config(self, index_name: str) -> IndexConfig:
         for config in self.search_configs.indexes:
             if config.index_name == index_name:
                 return config
@@ -54,16 +70,68 @@ class SearchService:
             
         self.qdrant_client.upsert(collection_name=index_name, wait=True, points=point_structs)
         
-    def search(self, search_request: SearchRequest) -> SearchResponse:
-        query = search_request.query
+    def get_all_queries(self, search_request: SearchRequest) -> List[str]:
+        # TODO: Add Model Query Generation Here
+        
+        queries = [search_request.query]
+        return queries
+        
+    def create_internal_search_request(self, search_request: SearchRequest) -> InternalSearchRequest:
+        # get all of the queries
+        queries = self.get_all_queries(search_request)
+        
+        # create the internal search request
+        internal_requests = []
+        for query in queries:
+            internal_requests.extend(self.create_internal_index_search_request_for_query(search_request, query))
+            
+        return InternalSearchRequest(internal_requests=internal_requests)
+        
+    def create_internal_index_search_request_for_query(self, search_request: SearchRequest, query : str) -> List[InternalIndexSearchRequest]:
+        index_configs = [self.get_index_config(index_request.index_name) for index_request in search_request.index_requests]
+        index_to_model = {index_config.index_name: index_config.vector_model for index_config in index_configs}
+        
+        # TODO: Move the Vector Caching to the Vector Service
+        query_vectors = self.generate_all_query_vectors(index_to_model.values(), query)
+        internal_requests = []
+        for index_request in search_request.index_requests:
+            index_config = self.get_index_config(index_request.index_name)
+            if index_config.vector_model not in query_vectors:
+                raise ValueError(f"Vector model {index_config.vector_model} not found")
+            
+            internal_requests.append(InternalIndexSearchRequest(
+                query=query,
+                index_name=index_request.index_name,
+                top_k=index_request.top_k,
+                confidence=index_request.confidence,
+                weight=index_request.weight,
+                vector_model=index_config.vector_model,
+                query_vector=query_vectors[index_config.vector_model]
+            ))
+        
+        return internal_requests
+        
+    def generate_all_query_vectors(self, model_names : List[str], query : str) -> Dict[str, List[float]]:
+        query_vectors = dict()
+        for model in model_names:
+            if model in query_vectors:
+                continue
+            if model not in self.vector_services:
+                raise ValueError(f"Vector model {model} not found")
+            query_vectors[model] = self.vector_services[model].generate_vector(query)
+        
+        return query_vectors
+    
+    def execute_internal_index_search_request(self, search_request: InternalIndexSearchRequest) -> InternalIndexSearchRequest:
+        index_name = search_request.index_name
+        query_vector = search_request.query_vector
         top_k = search_request.top_k
         
-        config : IndexConfig  = self.get_search_config(search_request.index_name)
-        
-        query_vector = self.get_query_vector(query, config.vector_model)
+        # TODO: Use the confidence
+        confidence = search_request.confidence
         
         search_results = self.qdrant_client.query_points(
-            collection_name=search_request.index_name,
+            collection_name=index_name,
             query=query_vector,
             limit=top_k
         )
@@ -80,10 +148,40 @@ class SearchService:
                 score=point.score
             ))
         
-        return SearchResponse(query=query, results=results, vector_model=search_request.index_name)
-
-    def get_query_vector(self, query: str, vector_model: str) -> List[float]:
-        if vector_model not in self.vector_services:
-            raise ValueError(f"Vector model {vector_model} not found")
+        return InternalIndexSearchRequest(
+            query=search_request.query,
+            index_name=index_name,
+            top_k=top_k,
+            confidence=search_request.confidence,
+            weight=search_request.weight,
+            vector_model=search_request.vector_model,
+            query_vector=query_vector,
+            results=results
+        )
+    
+    def merge_results(self, search_request: InternalSearchRequest, merge_method: str) -> List[SearchResponseItem]:
+        ## TODO: Add Merge Methods
         
-        return self.vector_services[vector_model].generate_vector(query)
+        if merge_method == "first" or len(search_request.internal_requests) == 1:
+            return search_request.internal_requests[0].results
+        else:
+            print("UNSUPPORTED MERGE METHOD -- USING FIRST")
+            return search_request.internal_requests[0].results
+        
+    def execute_internal_search_request(self, search_request: InternalSearchRequest) -> List[SearchResponseItem]:
+        updated_index_request = []
+        for index_request in search_request.internal_requests:
+            updated_index_request.append(self.execute_internal_index_search_request(index_request))
+        
+        search_request.internal_requests = updated_index_request
+        
+        return self.merge_results(search_request, search_request.merge_method)
+    
+    def search(self, search_request: SearchRequest) -> SearchResponse:
+        internal_search_request = self.create_internal_search_request(search_request)
+        search_response = self.execute_internal_search_request(internal_search_request)
+        
+        return SearchResponse(
+            request=search_request,
+            results=search_response
+        )

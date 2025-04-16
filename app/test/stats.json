@@ -1,71 +1,119 @@
 [
     {
-        "vector_model": "all-MiniLM-L6-v2",
-        "vector_size": 384,
-        "total_percision": 0.03944954128440368,
-        "total_recall": 0.03944954128440368,
-        "total_f1_score": 0.039449541284403686,
-        "total_reciprocal_rank": 0.25696810834425504,
-        "total_hard_percision": 0.03921568627450981,
-        "total_hard_recall": 0.03921568627450981,
-        "total_hard_f1_score": 0.039215686274509824,
-        "total_hard_reciprocal_rank": 0.2687052598817305,
+        "profile": {
+            "profile_name": "BASE all-MiniLM-L6-v2",
+            "index_requests": [
+                {
+                    "index_name": "all-MiniLM-L6-v2",
+                    "top_k": 10,
+                    "confidence": 0.0,
+                    "weight": 0.0
+                }
+            ],
+            "top_k": 10,
+            "merge_method": "default"
+        },
+        "total_percision": 0.04036697247706422,
+        "total_recall": 0.04036697247706422,
+        "total_f1_score": 0.04036697247706423,
+        "total_reciprocal_rank": 0.25926168632590646,
+        "total_hard_percision": 0.04117647058823531,
+        "total_hard_recall": 0.04117647058823531,
+        "total_hard_f1_score": 0.041176470588235314,
+        "total_hard_reciprocal_rank": 0.2736072206660442,
         "total_easy_percision": 0.03965517241379311,
         "total_easy_recall": 0.03965517241379311,
         "total_easy_f1_score": 0.03965517241379312,
         "total_easy_reciprocal_rank": 0.24664750957854403
     },
     {
-        "vector_model": "paraphrase-MiniLM-L6-v2",
-        "vector_size": 384,
+        "profile": {
+            "profile_name": "BASE paraphrase-MiniLM-L6-v2",
+            "index_requests": [
+                {
+                    "index_name": "paraphrase-MiniLM-L6-v2",
+                    "top_k": 10,
+                    "confidence": 0.0,
+                    "weight": 0.0
+                }
+            ],
+            "top_k": 10,
+            "merge_method": "default"
+        },
         "total_percision": 0.02201834862385322,
         "total_recall": 0.02201834862385322,
         "total_f1_score": 0.022018348623853223,
-        "total_reciprocal_rank": 0.12275374981796998,
+        "total_reciprocal_rank": 0.13749817970001452,
         "total_hard_percision": 0.029411764705882356,
         "total_hard_recall": 0.029411764705882356,
         "total_hard_f1_score": 0.029411764705882363,
-        "total_hard_reciprocal_rank": 0.15876128229069406,
+        "total_hard_reciprocal_rank": 0.17556800497976965,
         "total_easy_percision": 0.015517241379310343,
         "total_easy_recall": 0.015517241379310343,
         "total_easy_f1_score": 0.015517241379310345,
-        "total_easy_reciprocal_rank": 0.0910919540229885
+        "total_easy_reciprocal_rank": 0.10402298850574711
     },
     {
-        "vector_model": "all-distilroberta-v1",
-        "vector_size": 768,
-        "total_percision": 0.03302752293577983,
-        "total_recall": 0.03302752293577983,
-        "total_f1_score": 0.03302752293577984,
-        "total_reciprocal_rank": 0.19659603902723166,
-        "total_hard_percision": 0.03137254901960785,
-        "total_hard_recall": 0.03137254901960785,
-        "total_hard_f1_score": 0.03137254901960786,
-        "total_hard_reciprocal_rank": 0.2093681917211329,
-        "total_easy_percision": 0.03448275862068966,
-        "total_easy_recall": 0.03448275862068966,
-        "total_easy_f1_score": 0.03448275862068967,
-        "total_easy_reciprocal_rank": 0.1853653530377668
+        "profile": {
+            "profile_name": "BASE all-distilroberta-v1",
+            "index_requests": [
+                {
+                    "index_name": "all-distilroberta-v1",
+                    "top_k": 10,
+                    "confidence": 0.0,
+                    "weight": 0.0
+                }
+            ],
+            "top_k": 10,
+            "merge_method": "default"
+        },
+        "total_percision": 0.03486238532110093,
+        "total_recall": 0.03486238532110093,
+        "total_f1_score": 0.03486238532110094,
+        "total_reciprocal_rank": 0.21494466288044267,
+        "total_hard_percision": 0.03333333333333334,
+        "total_hard_recall": 0.03333333333333334,
+        "total_hard_f1_score": 0.03333333333333335,
+        "total_hard_reciprocal_rank": 0.2289760348583878,
+        "total_easy_percision": 0.03620689655172415,
+        "total_easy_recall": 0.03620689655172415,
+        "total_easy_f1_score": 0.036206896551724155,
+        "total_easy_reciprocal_rank": 0.20260673234811163
     },
     {
-        "vector_model": "nomic-ai/nomic-embed-text-v2-moe",
-        "vector_size": 768,
+        "profile": {
+            "profile_name": "BASE nomic-embed-text-v2",
+            "index_requests": [
+                {
+                    "index_name": "nomic-embed-text-v2",
+                    "top_k": 10,
+                    "confidence": 0.0,
+                    "weight": 0.0
+                }
+            ],
+            "top_k": 10,
+            "merge_method": "default"
+        },
         "total_percision": 0.04036697247706422,
         "total_recall": 0.04036697247706422,
         "total_f1_score": 0.04036697247706423,
-        "total_reciprocal_rank": 0.2957514198339886,
+        "total_reciprocal_rank": 0.30033857579729145,
         "total_hard_percision": 0.04509803921568629,
         "total_hard_recall": 0.04509803921568629,
         "total_hard_f1_score": 0.045098039215686295,
-        "total_hard_reciprocal_rank": 0.31328197945845004,
+        "total_hard_reciprocal_rank": 0.3230859010270775,
         "total_easy_percision": 0.03620689655172415,
         "total_easy_recall": 0.03620689655172415,
         "total_easy_f1_score": 0.036206896551724155,
         "total_easy_reciprocal_rank": 0.2803366174055829
     },
     {
-        "vector_model": "ANGULAR_JS_SEARCH",
-        "vector_size": 768,
+        "profile": {
+            "profile_name": "ANGULAR_JS_SEARCH",
+            "index_requests": [],
+            "top_k": 10,
+            "merge_method": "default"
+        },
         "total_percision": 0.0,
         "total_recall": 0.0,
         "total_f1_score": 0.0,

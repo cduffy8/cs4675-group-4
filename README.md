@@ -9,3 +9,8 @@ For running the frontend:
 3. make sure npm is installed
 4. make sure vite is installed
 5. run `npm run dev`
+
+For running testin suite:
+1. Make sure to update .env file to contain MONGO_DB connection string
+2. Navigate to 'app' directory
+3. Run `python test.py`

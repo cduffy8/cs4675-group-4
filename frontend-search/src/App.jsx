@@ -14,17 +14,26 @@ export default function App() {
     setLoading(true);
     setHasSearched(true); // Mark that search has been initiated
     try {
-      const response = await axios.get("http://localhost:8000/search", {
-        params: {
+      const response = await axios.post(
+        "http://localhost:8000/search",
+        {
           query: query,
-          index_name: vectorModel,
           top_k: 5,
+          index_requests: [
+            {
+              index_name: vectorModel,
+              top_k: 5,
+              confidence: 0.5
+            }
+          ]
         },
-        headers: {
-          "accept": "application/json",
-          "Content-Type": "application/json",
-        },
-      });
+        {
+          headers: {
+            "accept": "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       setResults(response.data.results); // Assuming response contains results array
     } catch (error) {
