@@ -11,9 +11,9 @@ class VectorService:
         self.embedding_cache : List[Tuple[str, List[float]]] = []
 
     def generate_vector(self, text) -> List[float]:
-        embedding = self.get_from_cache(text)
-        if embedding is not None:
-            return embedding
+        # embedding = self.get_from_cache(text)
+        # if embedding is not None:
+        #     return embedding
         
         ## can add more logic here to handle different models
         if self.model_name == "nomic-ai/nomic-embed-text-v2-moe":

@@ -37,3 +37,4 @@ class SearchResponseItem(BaseModel):
 class SearchResponse(BaseModel):
     request: SearchRequest
     results: List[SearchResponseItem]
+    metrics: dict

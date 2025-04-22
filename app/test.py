@@ -30,25 +30,94 @@ index_configs = IndexConfigs(indexes=[
 ])
 
 print("Loading search service...")
-search_service : SearchService = SearchService(mongo_db_secret, index_configs, initialize=True, docker=False)
+search_service : SearchService = SearchService(mongo_db_secret, index_configs, initialize=False, docker=True)
 print("Search service loaded")
 
 def generate_single_index_test_profiles(index_configs : IndexConfigs) -> List[TestSearchProfile]:
     test_profiles : List[TestSearchProfile] = []
     
-    for config in index_configs.indexes:
-        for top_k in [10, 20, 50]:
-            for confidence in [0.2,0.3, 0.4, 0.5, 0.6, 0.7, 0.8]:
-                test_profiles.append(
-                    TestSearchProfile(
-                        profile_name=f"BASE {top_k} {config.index_name} {confidence}",
-                        index_requests=[
-                            SearchIndexRequest(index_name=config.index_name, top_k=top_k, confidence=confidence)
-                        ],
-                        top_k=top_k,
-                        merge_method="default"
-                    )
-                )
+    
+    
+    # for config in index_configs.indexes:
+    #     # if config.index_name.startswith("summary-"):
+    #     #     continue
+    #     for top_k in [3, 5, 10, 20]:
+    #         for confidence in [0.3, 0.4, 0.5, 0.6, 0.7, 0.8]:
+    #             test_profiles.append(
+    #                 TestSearchProfile(
+    #                     profile_name=f"BASE {top_k} {config.index_name} {confidence}",
+    #                     index_requests=[
+    #                         SearchIndexRequest(index_name=config.index_name, top_k=top_k, confidence=confidence),
+    #                         # SearchIndexRequest(index_name="summary-" + config.index_name, top_k=top_k, confidence=confidence)
+    #                     ],
+    #                     top_k=top_k,
+    #                     merge_method="default"
+    #                 )
+    #             )
+    
+    test_profiles.append(
+        TestSearchProfile(
+            profile_name="3 combo-f1",
+            index_requests=[
+                SearchIndexRequest(index_name="all-MiniLM-L6-v2", top_k=3, confidence=0.3),
+                SearchIndexRequest(index_name="all-distilroberta-v1", top_k=3, confidence=0.3),
+                SearchIndexRequest(index_name="nomic-embed-text-v2", top_k=3, confidence=0.3),
+                SearchIndexRequest(index_name="summary-all-MiniLM-L6-v2", top_k=3, confidence=0.3),
+                SearchIndexRequest(index_name="summary-all-distilroberta-v1", top_k=3,confidence=0.3),
+                SearchIndexRequest(index_name="summary-nomic-embed-text-v2", top_k=3, confidence=0.6),
+            ],
+            top_k=3,
+            merge_method="default"
+        )
+    )
+    
+    test_profiles.append(
+        TestSearchProfile(
+            profile_name="10 combo-f1",
+            index_requests=[
+                SearchIndexRequest(index_name="all-MiniLM-L6-v2", top_k=3, confidence=0.3),
+                SearchIndexRequest(index_name="all-distilroberta-v1", top_k=3, confidence=0.3),
+                SearchIndexRequest(index_name="nomic-embed-text-v2", top_k=3, confidence=0.3),
+                SearchIndexRequest(index_name="summary-all-MiniLM-L6-v2", top_k=3, confidence=0.3),
+                SearchIndexRequest(index_name="summary-all-distilroberta-v1", top_k=3,confidence=0.3),
+                SearchIndexRequest(index_name="summary-nomic-embed-text-v2", top_k=3, confidence=0.6),
+            ],
+            top_k=10,
+            merge_method="default"
+        )
+    )
+    
+    test_profiles.append(
+        TestSearchProfile(
+            profile_name="10 combo-mrr",
+            index_requests=[
+                SearchIndexRequest(index_name="all-MiniLM-L6-v2", top_k=20, confidence=0.3),
+                SearchIndexRequest(index_name="all-distilroberta-v1", top_k=20, confidence=0.3),
+                SearchIndexRequest(index_name="nomic-embed-text-v2", top_k=20, confidence=0.3),
+                SearchIndexRequest(index_name="summary-all-MiniLM-L6-v2", top_k=20, confidence=0.3),
+                SearchIndexRequest(index_name="summary-all-distilroberta-v1", top_k=20,confidence=0.3),
+                SearchIndexRequest(index_name="summary-nomic-embed-text-v2", top_k=20, confidence=0.3),
+            ],
+            top_k=10,
+            merge_method="default"
+        )
+    )
+    
+    test_profiles.append(
+        TestSearchProfile(
+            profile_name="20 combo-mrr",
+            index_requests=[
+                SearchIndexRequest(index_name="all-MiniLM-L6-v2", top_k=3, confidence=0.3),
+                SearchIndexRequest(index_name="all-distilroberta-v1", top_k=3, confidence=0.3),
+                SearchIndexRequest(index_name="nomic-embed-text-v2", top_k=3, confidence=0.3),
+                SearchIndexRequest(index_name="summary-all-MiniLM-L6-v2", top_k=3, confidence=0.3),
+                SearchIndexRequest(index_name="summary-all-distilroberta-v1", top_k=3,confidence=0.3),
+                SearchIndexRequest(index_name="summary-nomic-embed-text-v2", top_k=3, confidence=0.6),
+            ],
+            top_k=20,
+            merge_method="default"
+        )
+    )
         
     return test_profiles
 
@@ -60,7 +129,7 @@ def get_document_uid_map():
     db = mongo_client["web_crawler"]
     crawl_collection = db["crawl_data_angular"]
     
-    documents = list(crawl_collection.find({}))
+    documents = list(crawl_collection.find({}, {"url": 1, "vector_id": 1}))
     vector_id_path_map = {}
     for document in documents:
         url = document["url"]

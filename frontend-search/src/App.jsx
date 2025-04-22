@@ -9,24 +9,225 @@ export default function App() {
   const [vectorModel, setVectorModel] = useState("all-MiniLM-L6-v2"); // Default model
   const [hasSearched, setHasSearched] = useState(false); // Track if search has been initiated
 
+  const getConfig = (model) => {
+    switch (model) {
+      case "all-MiniLM-L6-v2":
+        return {
+          query: query,
+          top_k: 10,
+          index_requests: [
+            {
+              index_name: model,
+              top_k: 10,
+              confidence: 0.5
+            }
+          ]
+        };
+      case "paraphrase-MiniLM-L6-v2":
+        return {
+          query: query,
+          top_k: 10,
+          index_requests: [
+            {
+              index_name: model,
+              top_k: 10,
+              confidence: 0.5
+            }
+          ]
+        };
+      case "all-distilroberta-v1":
+        return {
+          query: query,
+          top_k: 10,
+          index_requests: [
+            {
+              index_name: model,
+              top_k: 10,
+              confidence: 0.5
+            }
+          ]
+        };
+      case "nomic-embed-text-v2":
+        return {
+          query: query,
+          top_k: 10,
+          index_requests: [
+            {
+              index_name: model,
+              top_k: 10,
+              confidence: 0.5
+            }
+          ]
+        };
+      case "summary-all-MiniLM-L6-v2":
+        return {
+          query: query,
+          top_k: 10,
+          index_requests: [
+            {
+              index_name: model,
+              top_k: 10,
+              confidence: 0.5
+            }
+          ]
+        };
+      case "summary-paraphrase-MiniLM-L6-v2":
+        return {
+          query: query,
+          top_k: 10,
+          index_requests: [
+            {
+              index_name: model,
+              top_k: 10,
+              confidence: 0.5
+            }
+          ]
+        };
+      case "summary-all-distilroberta-v1":
+        return {
+          query: query,
+          top_k: 10,
+          index_requests: [
+            {
+              index_name: model,
+              top_k: 10,
+              confidence: 0.5
+            }
+          ]
+        };
+      case "summary-nomic-embed-text-v2":
+        return {
+          query: query,
+          top_k: 10,
+          index_requests: [
+            {
+              index_name: model,
+              top_k: 10,
+              confidence: 0.5
+            }
+          ]
+        };
+      case "percise":
+        return {
+          query: query,
+          top_k: 3,
+          index_requests: [
+            {
+              index_name: "all-MiniLM-L6-v2",
+              top_k: 3,
+              confidence: 0.3
+            },
+            {
+              index_name: "all-distilroberta-v1",
+              top_k: 3,
+              confidence: 0.3
+            },
+            {
+              index_name: "nomic-embed-text-v2",
+              top_k: 3,
+              confidence: 0.3
+            },
+            {
+              index_name: "summary-all-MiniLM-L6-v2",
+              top_k: 3,
+              confidence: 0.3
+            },
+            {
+              index_name: "summary-all-distilroberta-v1",
+              top_k: 3,
+              confidence: 0.3
+            },
+            {
+              index_name: "summary-nomic-embed-text-v2",
+              top_k: 3,
+              confidence: 0.3
+            },
+          ]
+        };
+      case "broad":
+        return {
+          query: query,
+          top_k: 10,
+          index_requests: [
+            {
+              index_name: "all-MiniLM-L6-v2",
+              top_k: 20,
+              confidence: 0.3
+            },
+            {
+              index_name: "all-distilroberta-v1",
+              top_k: 20,
+              confidence: 0.3
+            },
+            {
+              index_name: "nomic-embed-text-v2",
+              top_k: 20,
+              confidence: 0.3
+            },
+            {
+              index_name: "summary-all-MiniLM-L6-v2",
+              top_k: 20,
+              confidence: 0.3
+            },
+            {
+              index_name: "summary-all-distilroberta-v1",
+              top_k: 20,
+              confidence: 0.3
+            },
+            {
+              index_name: "summary-nomic-embed-text-v2",
+              top_k: 20,
+              confidence: 0.3
+            },
+          ]
+        };
+      default:
+        return {
+          query: query,
+          top_k: 10,
+          index_requests: [
+            {
+              index_name: model,
+              top_k: 5,
+              confidence: 0.5
+            }
+          ]
+        };
+    }
+  }
+
   const search = async () => {
     if (!query) return;
     setLoading(true);
     setHasSearched(true); // Mark that search has been initiated
     try {
+      // const response = await axios.post(
+      //   "http://localhost:8000/search",
+      //   {
+      //     query: query,
+      //     top_k: 10,
+      //     index_requests: [
+      //       {
+      //         index_name: vectorModel,
+      //         top_k: 5,
+      //         confidence: 0.5
+      //       }
+      //     ]
+      //   },
+      //   {
+      //     headers: {
+      //       "accept": "application/json",
+      //       "Content-Type": "application/json",
+      //     },
+      //   }
+      // );
+
+      const config = getConfig(vectorModel);
+      console.log("Config:", config); // Log the config for debugging
+      console.log("Query:", query); // Log the query for debugging
       const response = await axios.post(
         "http://localhost:8000/search",
-        {
-          query: query,
-          top_k: 5,
-          index_requests: [
-            {
-              index_name: vectorModel,
-              top_k: 5,
-              confidence: 0.5
-            }
-          ]
-        },
+        getConfig(vectorModel),
         {
           headers: {
             "accept": "application/json",
@@ -74,31 +275,36 @@ export default function App() {
         </div>
       </nav>
 
-      {/* Search Box */}
-      <div className="search-container">
-        <input
-          type="text"
-          className="search-input"
-          placeholder="Enter search query..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        <select
-          className="model-select"
-          value={vectorModel}
-          onChange={(e) => setVectorModel(e.target.value)}
-        >
-          <option value="all-MiniLM-L6-v2">all-MiniLM-L6-v2</option>
-          <option value="paraphrase-MiniLM-L6-v2">paraphrase-MiniLM-L6-v2</option>
-          <option value="all-distilroberta-v1">all-distilroberta-v1</option>
-          <option value="nomic-embed-text-v2">nomic-embed-text-v2</option>
-        </select>
-        <button onClick={search} className="search-button">
-          Search
-        </button>
-      </div>
+        <div className="search-container">
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Enter search query..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+          <select
+            className="model-select"
+            value={vectorModel}
+            onChange={(e) => setVectorModel(e.target.value)}
+          >
+            <option value="all-MiniLM-L6-v2">all-MiniLM-L6-v2</option>
+            <option value="paraphrase-MiniLM-L6-v2">paraphrase-MiniLM-L6-v2</option>
+            <option value="all-distilroberta-v1">all-distilroberta-v1</option>
+            <option value="nomic-embed-text-v2">nomic-embed-text-v2</option>
+            <option value="summary-all-MiniLM-L6-v2">summary-all-MiniLM-L6-v2</option>
+            <option value="summary-paraphrase-MiniLM-L6-v2">summary-paraphrase-MiniLM-L6-v2</option>
+            <option value="summary-all-distilroberta-v1">summary-all-distilroberta-v1</option>
+            <option value="summary-nomic-embed-text-v2">summary-nomic-embed-text-v2</option>
+            <option value="percise">percise</option>
+            <option value="broad">broad</option>
+          </select>
+          <button onClick={search} className="search-button">
+            Search
+          </button>
+        </div>
 
-      {/* Results */}
+        {/* Results */}
       {hasSearched && (
         <div className="results">
           {loading && <p className="loading-text">Searching...</p>}

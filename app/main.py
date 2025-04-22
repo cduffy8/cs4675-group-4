@@ -28,6 +28,10 @@ search_configs = IndexConfigs(indexes=[
     IndexConfig(vector_model="paraphrase-MiniLM-L6-v2", index_name="paraphrase-MiniLM-L6-v2", vector_size=384),
     IndexConfig(vector_model="all-distilroberta-v1", index_name="all-distilroberta-v1", vector_size=768),
     IndexConfig(vector_model="nomic-ai/nomic-embed-text-v2-moe", index_name= "nomic-embed-text-v2", vector_size=768),
+    IndexConfig(vector_model="all-MiniLM-L6-v2", index_name="summary-all-MiniLM-L6-v2", vector_size=384),
+    IndexConfig(vector_model="paraphrase-MiniLM-L6-v2", index_name="summary-paraphrase-MiniLM-L6-v2", vector_size=384),
+    IndexConfig(vector_model="all-distilroberta-v1", index_name="summary-all-distilroberta-v1", vector_size=768),
+    IndexConfig(vector_model="nomic-ai/nomic-embed-text-v2-moe", index_name= "summary-nomic-embed-text-v2", vector_size=768),
 ])
 
 print("Loading search service...")

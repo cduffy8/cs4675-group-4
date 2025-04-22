@@ -98,43 +98,48 @@ class TestResults:
             "answers": [str(answer) for answer in self.test_data.answers],
             "results": [result.model_dump() for result in self.results]
         }
-        
 class TestStats:
-    def __init__(self, profile : TestSearchProfile):
-        self.profile : TestSearchProfile = profile
-        
+    def __init__(self, profile: TestSearchProfile):
+        self.profile: TestSearchProfile = profile
+
         self.total_percision = 0.0
         self.total_recall = 0.0
         self.total_f1_score = 0.0
         self.total_reciprocal_rank = 0.0
         self.total_tests = 0
-        
+
         self.total_hard_percision = 0.0
         self.total_hard_recall = 0.0
         self.total_hard_f1_score = 0.0
         self.total_hard_reciprocal_rank = 0.0
         self.total_hard_tests = 0
-        
+
         self.total_easy_percision = 0.0
         self.total_easy_recall = 0.0
         self.total_easy_f1_score = 0.0
         self.total_easy_reciprocal_rank = 0.0
         self.total_easy_tests = 0
-        
+
+        self.total_medium_percision = 0.0
+        self.total_medium_recall = 0.0
+        self.total_medium_f1_score = 0.0
+        self.total_medium_reciprocal_rank = 0.0
+        self.total_medium_tests = 0
+
     def add_result(self, result: TestResult):
         self.total_percision += result.precision
         self.total_recall += result.recall
         self.total_f1_score += result.f1_score
         self.total_reciprocal_rank += result.reciprocal_rank
         self.total_tests += 1
-        
+
         if result.difficulty == "Hard":
             self.total_hard_percision += result.precision
             self.total_hard_recall += result.recall
             self.total_hard_f1_score += result.f1_score
             self.total_hard_reciprocal_rank += result.reciprocal_rank
             self.total_hard_tests += 1
-            
+
         elif result.difficulty == "Easy":
             self.total_easy_percision += result.precision
             self.total_easy_recall += result.recall
@@ -142,42 +147,59 @@ class TestStats:
             self.total_easy_reciprocal_rank += result.reciprocal_rank
             self.total_easy_tests += 1
 
+        elif result.difficulty == "Medium":
+            self.total_medium_percision += result.precision
+            self.total_medium_recall += result.recall
+            self.total_medium_f1_score += result.f1_score
+            self.total_medium_reciprocal_rank += result.reciprocal_rank
+            self.total_medium_tests += 1
+
     def calculate_stats(self):
         if self.total_tests > 0:
             self.total_percision /= self.total_tests
             self.total_recall /= self.total_tests
             self.total_f1_score /= self.total_tests
             self.total_reciprocal_rank /= self.total_tests
-            
+
         if self.total_hard_tests > 0:
             self.total_hard_percision /= self.total_hard_tests
             self.total_hard_recall /= self.total_hard_tests
             self.total_hard_f1_score /= self.total_hard_tests
             self.total_hard_reciprocal_rank /= self.total_hard_tests
-            
+
         if self.total_easy_tests > 0:
             self.total_easy_percision /= self.total_easy_tests
             self.total_easy_recall /= self.total_easy_tests
             self.total_easy_f1_score /= self.total_easy_tests
             self.total_easy_reciprocal_rank /= self.total_easy_tests
-            
+
+        if self.total_medium_tests > 0:
+            self.total_medium_percision /= self.total_medium_tests
+            self.total_medium_recall /= self.total_medium_tests
+            self.total_medium_f1_score /= self.total_medium_tests
+            self.total_medium_reciprocal_rank /= self.total_medium_tests
+
     def to_dict(self):
         return {
             "profile": self.profile.model_dump(),
-            
+
             "total_percision": self.total_percision,
             "total_recall": self.total_recall,
             "total_f1_score": self.total_f1_score,
             "total_reciprocal_rank": self.total_reciprocal_rank,
-            
+
             "total_hard_percision": self.total_hard_percision,
             "total_hard_recall": self.total_hard_recall,
             "total_hard_f1_score": self.total_hard_f1_score,
             "total_hard_reciprocal_rank": self.total_hard_reciprocal_rank,
-            
+
             "total_easy_percision": self.total_easy_percision,
             "total_easy_recall": self.total_easy_recall,
             "total_easy_f1_score": self.total_easy_f1_score,
-            "total_easy_reciprocal_rank": self.total_easy_reciprocal_rank
+            "total_easy_reciprocal_rank": self.total_easy_reciprocal_rank,
+
+            "total_medium_percision": self.total_medium_percision,
+            "total_medium_recall": self.total_medium_recall,
+            "total_medium_f1_score": self.total_medium_f1_score,
+            "total_medium_reciprocal_rank": self.total_medium_reciprocal_rank
         }
-    
